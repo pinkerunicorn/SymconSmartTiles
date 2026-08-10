@@ -75,10 +75,10 @@
                         {
                             "name": "Value",
                             "caption": "Wert",
-                            "width": "80px",
-                            "add": 0,
+                            "width": "120px",
+                            "add": "",
                             "edit": {
-                                "type": "NumberSpinner"
+                                "type": "ValidationTextBox"
                             }
                         },
                         {

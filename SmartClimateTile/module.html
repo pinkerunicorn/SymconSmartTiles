@@ -652,9 +652,11 @@
                 els.modesContainer.innerHTML = '';
                 (newState.modes || []).forEach(mode => {
                     const btn = document.createElement('button');
-                    btn.className = 'mode-btn' + (mode.Value === newState.activeMode ? ' active' : '');
+                    // Loose-Vergleich: "AUTOMATIC" == "AUTOMATIC", 0 == "0" etc.
+                    const isActive = (String(mode.Value) === String(newState.activeMode));
+                    btn.className = 'mode-btn' + (isActive ? ' active' : '');
                     
-                    if (mode.Value === newState.activeMode) {
+                    if (isActive) {
                         btn.style.setProperty('--mode-color', intToHex(mode.Color));
                         btn.classList.add('pulse');
                     }
