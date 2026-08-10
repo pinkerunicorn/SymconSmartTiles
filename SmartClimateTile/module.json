@@ -10,7 +10,7 @@
     ],
     "parentRequirements": [],
     "childRequirements": [],
-    "implemented": ["VisualizationTile"],
+    "implemented": [],
     "prefix": "SCT"
 }
 
