@@ -348,7 +348,7 @@
         const CENTER = 120;
 
         function polarToCartesian(angleInDegrees) {
-            const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+            const angleInRadians = angleInDegrees * Math.PI / 180.0;
             return {
                 x: CENTER + (RADIUS * Math.cos(angleInRadians)),
                 y: CENTER + (RADIUS * Math.sin(angleInRadians))
@@ -356,11 +356,10 @@
         }
 
         function describeArc(startAngle, span) {
-            const endAngle = startAngle + span;
-            const start = polarToCartesian(endAngle);
-            const end = polarToCartesian(startAngle);
-            const largeArcFlag = span <= 180 ? "0" : "1";
-            return `M ${start.x} ${start.y} A ${RADIUS} ${RADIUS} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
+            const start = polarToCartesian(startAngle);
+            const end = polarToCartesian(startAngle + span);
+            const largeArcFlag = span > 180 ? "1" : "0";
+            return `M ${start.x} ${start.y} A ${RADIUS} ${RADIUS} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
         }
 
         function tempToT(temp) {
@@ -380,7 +379,7 @@
             const clientY = e.clientY ?? (e.touches?.[0]?.clientY ?? 0);
             const x = clientX - rect.left - (rect.width / 2);
             const y = clientY - rect.top - (rect.height / 2);
-            let angle = Math.atan2(y, x) * 180 / Math.PI + 90;
+            let angle = Math.atan2(y, x) * 180 / Math.PI;
             if (angle < 0) angle += 360;
             return angle;
         }
