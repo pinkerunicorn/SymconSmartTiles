@@ -117,14 +117,13 @@ class SmartClimateTile extends IPSModuleStrict
             return '<div style="color:red;padding:20px;">module.html nicht gefunden</div>';
         }
 
-        $module = file_get_contents($htmlPath);
+        $html = file_get_contents($htmlPath);
 
-        // Wilkware-Muster: handleMessage() als inline-Script ans HTML-Ende haengen.
-        // Das Script laeuft NACH dem DOM - kein DOMContentLoaded-Timing-Problem moeglich.
-        // json_encode doppelt: erst Array->JSON-String, dann JSON-String->escaped JS-String-Literal
-        $handling = '<script>handleMessage(' . json_encode($this->GetTileData(), JSON_UNESCAPED_UNICODE) . ');</script>';
+        // Bewährtes Pattern (EnergyDistributionTile): htmlspecialchars + .replace() im JS
+        $initialData = json_encode($this->GetTileData(), JSON_UNESCAPED_UNICODE);
+        $html = str_replace('__INITIAL_DATA__', htmlspecialchars($initialData, ENT_QUOTES, 'UTF-8'), $html);
 
-        return $module . $handling;
+        return $html;
     }
 
     /**

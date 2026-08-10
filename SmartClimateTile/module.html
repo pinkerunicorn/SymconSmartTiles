@@ -356,7 +356,31 @@
 
     
     <script>
-        // Icons dictionary for SVG paths
+        // Initiale Daten als JS-String-Literal (htmlspecialchars in PHP, .replace() hier)
+        let rawData = '__INITIAL_DATA__';
+        let state = {};
+
+        try {
+            const decoded = rawData
+                .replace(/&quot;/g, '"')
+                .replace(/&#039;/g, "'")
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>');
+            state = JSON.parse(decoded);
+        } catch (e) {
+            console.error('SCT: Parse Error', e);
+        }
+
+        // Config-Defaults sicherstellen
+        if (!state.config) state.config = {};
+        if (!state.config.tempMin) state.config.tempMin = 5.0;
+        if (!state.config.tempMax || state.config.tempMax <= state.config.tempMin) state.config.tempMax = 30.0;
+        if (!state.config.tempStep) state.config.tempStep = 0.5;
+        if (state.config.colorCold === undefined) state.config.colorCold = 0x3B82F6;
+        if (state.config.colorWarm === undefined) state.config.colorWarm = 0xEF4444;
+        if (state.config.gaugeStyle === undefined) state.config.gaugeStyle = 0;
+
         const ICONS = {
             'Climate': '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3-11v2H9v-2h6z"/>',
             'Window': '<path d="M11 20v-7H3v7h8zm2 0h8v-7h-8v7zm-2-9V4H3v7h8zm2 0h8V4h-8v7z"/>',
@@ -364,35 +388,6 @@
             'default': '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>'
         };
 
-        // Fallback mock data for testing outside Symcon
-        const MOCK_DATA = {
-            actualTemp: 21.5,
-            targetTemp: 22.0,
-            humidity: 58,
-            valvePosition: 45,
-            hasHumidity: true,
-            hasValve: true,
-            activeMode: 0,
-            modes: [
-                {Value: 0, Caption: "Auto", Icon: "Climate", Color: 52224},
-                {Value: 1, Caption: "Man", Icon: "Fire", Color: 16744448}
-            ],
-            statusIndicators: [
-                {active: true, icon: "Window", color: 16744448, label: "Fenster"}
-            ],
-            config: {
-                gaugeStyle: 0,
-                colorCold: 3899638,
-                colorWarm: 15684676,
-                tempMin: 5.0,
-                tempMax: 30.0,
-                tempStep: 0.5,
-                showLabels: true
-            }
-        };
-
-        let state = {};
-        
         // Gauge Settings
         const GAUGE_CX = 100;
         const GAUGE_CY = 100;
@@ -702,52 +697,61 @@
             updateGaugeValue(val, false);
             
             // Debounced state update to avoid spamming variables
-            state.targetTemp = val;
-        }
-
-        function handleDragEnd(e) {
+            state.targetTemp = va        function handleDragEnd(e) {
             if (!isDragging) return;
             isDragging = false;
-            
-            // Send action to Symcon
             if (typeof requestAction === 'function') {
                 requestAction('SetTemperature', state.targetTemp);
-                    // Init-Funktion – wird aufgerufen sobald DOM bereit ist
-        // Der eigentliche erste Datenanruf kommt von PHP als handleMessage() am HTML-Ende
-        function init() {
-            // Event-Listener registrieren
-            if (els.svg) {
-                els.svg.addEventListener('mousedown', handleDragStart);
-                els.svg.addEventListener('touchstart', handleDragStart, {passive: false});
             }
-            window.addEventListener('mousemove', handleDragMove);
-            window.addEventListener('touchmove', handleDragMove, {passive: false});
-            window.addEventListener('mouseup', handleDragEnd);
-            window.addEventListener('touchend', handleDragEnd);
-
-            if (els.btnMinus) els.btnMinus.addEventListener('click', () => {
-                let newVal = Math.max(state.config.tempMin, (state.targetTemp || 0) - state.config.tempStep);
-                newVal = Math.round(newVal / state.config.tempStep) * state.config.tempStep;
-                state.targetTemp = newVal;
-                updateGaugeValue(newVal);
-                if (typeof requestAction === 'function') requestAction('SetTemperature', newVal);
-            });
-
-            if (els.btnPlus) els.btnPlus.addEventListener('click', () => {
-                let newVal = Math.min(state.config.tempMax, (state.targetTemp || 0) + state.config.tempStep);
-                newVal = Math.round(newVal / state.config.tempStep) * state.config.tempStep;
-                state.targetTemp = newVal;
-                updateGaugeValue(newVal);
-                if (typeof requestAction === 'function') requestAction('SetTemperature', newVal);
-            });
         }
 
-        // Sofort init aufrufen (DOM ist beim inline-Script-Ansatz bereits fertig)
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
+        // Event-Listener direkt registrieren (Script laeuft synchron nach DOM)
+        if (els.svg) {
+            els.svg.addEventListener('mousedown', handleDragStart);
+            els.svg.addEventListener('touchstart', handleDragStart, {passive: false});
         }
+        window.addEventListener('mousemove', handleDragMove);
+        window.addEventListener('touchmove', handleDragMove, {passive: false});
+        window.addEventListener('mouseup', handleDragEnd);
+        window.addEventListener('touchend', handleDragEnd);
+
+        if (els.btnMinus) els.btnMinus.addEventListener('click', () => {
+            let newVal = Math.max(state.config.tempMin, (state.targetTemp || state.config.tempMin) - state.config.tempStep);
+            newVal = Math.round(newVal / state.config.tempStep) * state.config.tempStep;
+            state.targetTemp = newVal;
+            updateGaugeValue(newVal);
+            if (typeof requestAction === 'function') requestAction('SetTemperature', newVal);
+        });
+
+        if (els.btnPlus) els.btnPlus.addEventListener('click', () => {
+            let newVal = Math.min(state.config.tempMax, (state.targetTemp || state.config.tempMin) + state.config.tempStep);
+            newVal = Math.round(newVal / state.config.tempStep) * state.config.tempStep;
+            state.targetTemp = newVal;
+            updateGaugeValue(newVal);
+            if (typeof requestAction === 'function') requestAction('SetTemperature', newVal);
+        });
+
+        // PHP hat Symcon-Callback fuer VM_UPDATE
+        window.handleMessage = function(payload) {
+            try {
+                let data = typeof payload === 'string' ? JSON.parse(payload) : payload;
+                const oldState = {...state};
+                state = {...state, ...data};
+                if (data.config) state.config = {...(oldState.config || {}), ...data.config};
+                if (!state.config.tempMax || state.config.tempMax <= state.config.tempMin) state.config.tempMax = (state.config.tempMin || 5) + 25;
+                if (!state.config.tempStep) state.config.tempStep = 0.5;
+                renderGaugeStatic();
+                renderState(state, oldState);
+                updateGaugeValue(state.targetTemp || state.config.tempMin, true);
+            } catch (e) {
+                console.error('SCT: handleMessage error', e);
+            }
+        };
+
+        // Synchron rendern – direkt beim Script-Aufruf, kein DOMContentLoaded noetig
+        renderGaugeStatic();
+        renderState(state);
+        updateGaugeValue(state.targetTemp || state.config.tempMin, false);
     </script>
 </body>
 </html>
