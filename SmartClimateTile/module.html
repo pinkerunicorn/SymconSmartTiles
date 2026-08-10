@@ -726,47 +726,71 @@
             }
         }
 
-        // Events
-        els.svg.addEventListener('mousedown', handleDragStart);
-        els.svg.addEventListener('touchstart', handleDragStart, {passive: false});
-        
-        window.addEventListener('mousemove', handleDragMove);
-        window.addEventListener('touchmove', handleDragMove, {passive: false});
-        
-        window.addEventListener('mouseup', handleDragEnd);
-        window.addEventListener('touchend', handleDragEnd);
+        // Init-Funktion
+        function init() {
+            let initDataStr = '';
+            const initEl = document.getElementById('initial-data');
+            if (initEl) initDataStr = initEl.textContent.trim();
 
-        els.btnMinus.addEventListener('click', () => {
-            let newVal = Math.max(state.config.tempMin, state.targetTemp - state.config.tempStep);
-            state.targetTemp = newVal;
-            updateGaugeValue(newVal);
-            if (typeof requestAction === 'function') requestAction('SetTemperature', newVal);
-        });
-
-        els.btnPlus.addEventListener('click', () => {
-            let newVal = Math.min(state.config.tempMax, state.targetTemp + state.config.tempStep);
-            state.targetTemp = newVal;
-            updateGaugeValue(newVal);
-            if (typeof requestAction === 'function') requestAction('SetTemperature', newVal);
-        });
-
-        // Init
-        document.addEventListener('DOMContentLoaded', () => {
-            let initDataStr = document.getElementById('initial-data').textContent.trim();
-            if (initDataStr === '__INITIAL_DATA__') {
-                // Not in Symcon yet, use mock data
+            if (!initDataStr || initDataStr === '__INITIAL_DATA__') {
+                // Kein JSON injiziert (z.B. Standalone-Test) -> Mock-Daten
                 state = MOCK_DATA;
             } else {
                 try {
                     state = JSON.parse(initDataStr);
                 } catch(e) {
-                    console.error("Init JSON parse error", e);
+                    console.error('SCT: Init JSON parse error', e, initDataStr.slice(0,100));
                     state = MOCK_DATA;
                 }
             }
+
+            // Sicherheit: config-Defaults wenn fehlt oder 0-Werte
+            if (!state.config) state.config = MOCK_DATA.config;
+            if (!state.config.tempMin && !state.config.tempMax) {
+                state.config.tempMin = 5.0;
+                state.config.tempMax = 30.0;
+            }
+            if (state.config.tempMax <= state.config.tempMin) {
+                state.config.tempMax = state.config.tempMin + 25;
+            }
+            if (!state.config.tempStep || state.config.tempStep <= 0) state.config.tempStep = 0.5;
+
+            // Event-Listener fuer Touch/Mouse
+            if (els.svg) {
+                els.svg.addEventListener('mousedown', handleDragStart);
+                els.svg.addEventListener('touchstart', handleDragStart, {passive: false});
+            }
+            window.addEventListener('mousemove', handleDragMove);
+            window.addEventListener('touchmove', handleDragMove, {passive: false});
+            window.addEventListener('mouseup', handleDragEnd);
+            window.addEventListener('touchend', handleDragEnd);
+
+            if (els.btnMinus) els.btnMinus.addEventListener('click', () => {
+                let newVal = Math.max(state.config.tempMin, state.targetTemp - state.config.tempStep);
+                newVal = Math.round(newVal / state.config.tempStep) * state.config.tempStep;
+                state.targetTemp = newVal;
+                updateGaugeValue(newVal);
+                if (typeof requestAction === 'function') requestAction('SetTemperature', newVal);
+            });
+
+            if (els.btnPlus) els.btnPlus.addEventListener('click', () => {
+                let newVal = Math.min(state.config.tempMax, state.targetTemp + state.config.tempStep);
+                newVal = Math.round(newVal / state.config.tempStep) * state.config.tempStep;
+                state.targetTemp = newVal;
+                updateGaugeValue(newVal);
+                if (typeof requestAction === 'function') requestAction('SetTemperature', newVal);
+            });
+
             renderState(state);
-            updateGaugeValue(state.targetTemp, false); // Initial placement without transition
-        });
+            updateGaugeValue(state.targetTemp || state.config.tempMin, false);
+        }
+
+        // DOMContentLoaded bereits gefeuert? Dann sofort init, sonst warten.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 </html>
