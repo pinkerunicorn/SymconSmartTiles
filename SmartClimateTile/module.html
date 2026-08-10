@@ -6,49 +6,31 @@
     <title>Smart Climate Tile</title>
     <style>
         :root {
-            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --glass-bg: rgba(255, 255, 255, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.4);
-            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-            --gauge-bg: #e5e7eb;
-            --control-bg: rgba(255, 255, 255, 0.8);
-            --control-hover: rgba(255, 255, 255, 1);
-            --glow-color: rgba(239, 68, 68, 0);
-            --transition-speed: 0.3s;
+            --color-cold: #3B82F6;
+            --color-warm: #EF4444;
         }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --text-main: #f3f4f6;
-                --text-muted: #9ca3af;
-                --glass-bg: rgba(17, 24, 39, 0.65);
-                --glass-border: rgba(75, 85, 99, 0.4);
-                --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-                --gauge-bg: #374151;
-                --control-bg: rgba(31, 41, 55, 0.8);
-                --control-hover: rgba(55, 65, 81, 1);
-            }
-        }
-
-        * {
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
             user-select: none;
             -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
 
-        body, html {
-            margin: 0;
-            padding: 0;
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: transparent; }
+
+        html, body {
             width: 100%;
             height: 100%;
-            font-family: var(--font-family);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: transparent;
             overflow: hidden;
-            color: var(--text-main);
-            transition: color var(--transition-speed), background var(--transition-speed);
+            color: var(--content-color, #f3f4f6);
         }
 
         .tile-wrapper {
@@ -60,13 +42,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            padding: 10cqmin;
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            box-shadow: var(--glass-shadow);
+            padding: var(--margin-top, 10px) var(--margin-side, 10px) var(--margin-bottom, 10px);
             position: relative;
         }
 
@@ -105,7 +81,7 @@
 
         .gauge-bg-path {
             fill: none;
-            stroke: var(--gauge-bg);
+            stroke: color-mix(in srgb, var(--content-color, #9ca3af) 15%, transparent);
             stroke-width: 12;
             stroke-linecap: round;
         }
@@ -152,19 +128,20 @@
             letter-spacing: -1px;
             display: flex;
             align-items: start;
+            color: var(--content-color, #f3f4f6);
         }
         
         .temp-actual .unit {
             font-size: 0.5em;
             font-weight: 500;
             margin-top: 0.1em;
-            color: var(--text-muted);
+            color: color-mix(in srgb, var(--content-color, #9ca3af) 60%, transparent);
         }
 
         .temp-target {
             font-size: clamp(0.9rem, 5cqw, 1.2rem);
             font-weight: 500;
-            color: var(--text-muted);
+            color: color-mix(in srgb, var(--content-color, #9ca3af) 60%, transparent);
             margin-bottom: 8px;
         }
 
@@ -172,7 +149,7 @@
             display: flex;
             gap: 12px;
             font-size: clamp(0.8rem, 4cqw, 1rem);
-            color: var(--text-muted);
+            color: color-mix(in srgb, var(--content-color, #9ca3af) 60%, transparent);
             margin-bottom: 8px;
         }
 
@@ -377,7 +354,6 @@
         </div>
     </div>
 
-    <script type="application/json" id="initial-data">__INITIAL_DATA__</script>
     
     <script>
         // Icons dictionary for SVG paths
@@ -679,17 +655,26 @@
             }
         }
 
-        // Global Symcon Callback
+        // Global Symcon Callback – wird von PHP als inline-Script aufgerufen und bei VM_UPDATE
         window.handleMessage = function(payload) {
             try {
                 let data = typeof payload === 'string' ? JSON.parse(payload) : payload;
                 const oldState = {...state};
                 state = {...state, ...data};
-                // Ensure config exists if partial update
-                if(data.config) state.config = {...oldState.config, ...data.config};
+
+                // Config mergen und Defaults sicherstellen
+                if (data.config) {
+                    state.config = {...(oldState.config || {}), ...data.config};
+                }
+                if (!state.config) state.config = {gaugeStyle:0, colorCold:3899638, colorWarm:15684676, tempMin:5.0, tempMax:30.0, tempStep:0.5, showLabels:true};
+                if (!state.config.tempMax || state.config.tempMax <= state.config.tempMin) state.config.tempMax = (state.config.tempMin || 5) + 25;
+                if (!state.config.tempStep || state.config.tempStep <= 0) state.config.tempStep = 0.5;
+
+                renderGaugeStatic();
                 renderState(state, oldState);
+                updateGaugeValue(state.targetTemp || state.config.tempMin, Object.keys(oldState).length > 0);
             } catch (e) {
-                console.error("Error parsing message", e);
+                console.error('SCT: handleMessage error', e);
             }
         };
 
@@ -723,39 +708,10 @@
             // Send action to Symcon
             if (typeof requestAction === 'function') {
                 requestAction('SetTemperature', state.targetTemp);
-            }
-        }
-
-        // Init-Funktion
+                    // Init-Funktion – wird aufgerufen sobald DOM bereit ist
+        // Der eigentliche erste Datenanruf kommt von PHP als handleMessage() am HTML-Ende
         function init() {
-            let initDataStr = '';
-            const initEl = document.getElementById('initial-data');
-            if (initEl) initDataStr = initEl.textContent.trim();
-
-            if (!initDataStr || initDataStr === '__INITIAL_DATA__') {
-                // Kein JSON injiziert (z.B. Standalone-Test) -> Mock-Daten
-                state = MOCK_DATA;
-            } else {
-                try {
-                    state = JSON.parse(initDataStr);
-                } catch(e) {
-                    console.error('SCT: Init JSON parse error', e, initDataStr.slice(0,100));
-                    state = MOCK_DATA;
-                }
-            }
-
-            // Sicherheit: config-Defaults wenn fehlt oder 0-Werte
-            if (!state.config) state.config = MOCK_DATA.config;
-            if (!state.config.tempMin && !state.config.tempMax) {
-                state.config.tempMin = 5.0;
-                state.config.tempMax = 30.0;
-            }
-            if (state.config.tempMax <= state.config.tempMin) {
-                state.config.tempMax = state.config.tempMin + 25;
-            }
-            if (!state.config.tempStep || state.config.tempStep <= 0) state.config.tempStep = 0.5;
-
-            // Event-Listener fuer Touch/Mouse
+            // Event-Listener registrieren
             if (els.svg) {
                 els.svg.addEventListener('mousedown', handleDragStart);
                 els.svg.addEventListener('touchstart', handleDragStart, {passive: false});
@@ -766,7 +722,7 @@
             window.addEventListener('touchend', handleDragEnd);
 
             if (els.btnMinus) els.btnMinus.addEventListener('click', () => {
-                let newVal = Math.max(state.config.tempMin, state.targetTemp - state.config.tempStep);
+                let newVal = Math.max(state.config.tempMin, (state.targetTemp || 0) - state.config.tempStep);
                 newVal = Math.round(newVal / state.config.tempStep) * state.config.tempStep;
                 state.targetTemp = newVal;
                 updateGaugeValue(newVal);
@@ -774,18 +730,15 @@
             });
 
             if (els.btnPlus) els.btnPlus.addEventListener('click', () => {
-                let newVal = Math.min(state.config.tempMax, state.targetTemp + state.config.tempStep);
+                let newVal = Math.min(state.config.tempMax, (state.targetTemp || 0) + state.config.tempStep);
                 newVal = Math.round(newVal / state.config.tempStep) * state.config.tempStep;
                 state.targetTemp = newVal;
                 updateGaugeValue(newVal);
                 if (typeof requestAction === 'function') requestAction('SetTemperature', newVal);
             });
-
-            renderState(state);
-            updateGaugeValue(state.targetTemp || state.config.tempMin, false);
         }
 
-        // DOMContentLoaded bereits gefeuert? Dann sofort init, sonst warten.
+        // Sofort init aufrufen (DOM ist beim inline-Script-Ansatz bereits fertig)
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
         } else {
