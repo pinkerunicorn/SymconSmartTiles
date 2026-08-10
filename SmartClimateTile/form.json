@@ -202,16 +202,6 @@
             "caption": "Visualisierung",
             "items": [
                 {
-                    "type": "Select",
-                    "name": "GaugeStyle",
-                    "caption": "Gauge-Stil",
-                    "options": [
-                        { "caption": "270-Grad Bogen (Standard)", "value": 0 },
-                        { "caption": "180-Grad Halbkreis", "value": 1 },
-                        { "caption": "360-Grad Ring", "value": 2 }
-                    ]
-                },
-                {
                     "type": "RowLayout",
                     "items": [
                         {

@@ -39,7 +39,6 @@ class SmartClimateTile extends IPSModuleStrict
         $this->RegisterPropertyString('StatusIndicators', '[]');
 
         // --- Visualisierung ---
-        $this->RegisterPropertyInteger('GaugeStyle', 0);       // 0=270°, 1=180°, 2=360°
         $this->RegisterPropertyInteger('ColorCold', 0x3B82F6);  // Blau
         $this->RegisterPropertyInteger('ColorWarm', 0xEF4444);  // Rot
         $this->RegisterPropertyFloat('TempMin', 5.0);
@@ -199,7 +198,6 @@ class SmartClimateTile extends IPSModuleStrict
 
         // Konfigurations-Parameter
         $config = [
-            'gaugeStyle' => $this->ReadPropertyInteger('GaugeStyle'),
             'colorCold'  => $this->ReadPropertyInteger('ColorCold'),
             'colorWarm'  => $this->ReadPropertyInteger('ColorWarm'),
             'tempMin'    => $this->ReadPropertyFloat('TempMin'),
