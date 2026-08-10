@@ -1,0 +1,272 @@
+{
+    "elements": [
+        {
+            "type": "ExpansionPanel",
+            "caption": "Klimadaten",
+            "expanded": true,
+            "items": [
+                {
+                    "type": "SelectVariable",
+                    "name": "VarActualTemp",
+                    "caption": "Ist-Temperatur",
+                    "width": "100%",
+                    "requiredLowestType": 2
+                },
+                {
+                    "type": "SelectVariable",
+                    "name": "VarTargetTemp",
+                    "caption": "Soll-Temperatur",
+                    "width": "100%",
+                    "requiredLowestType": 2
+                },
+                {
+                    "type": "SelectVariable",
+                    "name": "VarHumidity",
+                    "caption": "Luftfeuchtigkeit (optional)",
+                    "width": "100%",
+                    "requiredLowestType": 2
+                },
+                {
+                    "type": "SelectVariable",
+                    "name": "VarValvePosition",
+                    "caption": "Ventilstellung (optional)",
+                    "width": "100%",
+                    "requiredLowestType": 2
+                },
+                {
+                    "type": "Label",
+                    "caption": "───── Betriebsmodi ─────",
+                    "bold": true
+                },
+                {
+                    "type": "SelectVariable",
+                    "name": "VarModeSelect",
+                    "caption": "Betriebsmodus (optional)",
+                    "width": "100%",
+                    "requiredLowestType": 2
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "Button",
+                            "caption": "VARIABLE ANALYSIEREN",
+                            "onClick": "SCT_AnalyzeModeVariable($id);"
+                        },
+                        {
+                            "type": "Button",
+                            "caption": "LISTE LEEREN",
+                            "onClick": "SCT_ClearModes($id);"
+                        }
+                    ]
+                },
+                {
+                    "type": "List",
+                    "name": "AvailableModes",
+                    "caption": "Verfuegbare Modi",
+                    "rowCount": 5,
+                    "add": true,
+                    "delete": true,
+                    "sort": {
+                        "column": "Value",
+                        "direction": "ascending"
+                    },
+                    "columns": [
+                        {
+                            "name": "Value",
+                            "caption": "Wert",
+                            "width": "80px",
+                            "edit": {
+                                "type": "NumberSpinner"
+                            }
+                        },
+                        {
+                            "name": "Caption",
+                            "caption": "Bezeichnung",
+                            "width": "auto",
+                            "edit": {
+                                "type": "ValidationTextBox"
+                            }
+                        },
+                        {
+                            "name": "Icon",
+                            "caption": "Icon",
+                            "width": "120px",
+                            "edit": {
+                                "type": "SelectIcon"
+                            }
+                        },
+                        {
+                            "name": "Color",
+                            "caption": "Farbe",
+                            "width": "100px",
+                            "edit": {
+                                "type": "SelectColor"
+                            }
+                        }
+                    ],
+                    "values": []
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
+            "caption": "Status-Indikatoren",
+            "items": [
+                {
+                    "type": "Label",
+                    "caption": "Zeige beliebig viele Status-Icons im Gauge an (z.B. Fensterstatus, Prognose etc.)"
+                },
+                {
+                    "type": "List",
+                    "name": "StatusIndicators",
+                    "caption": "",
+                    "rowCount": 4,
+                    "add": true,
+                    "delete": true,
+                    "columns": [
+                        {
+                            "name": "VariableID",
+                            "caption": "Variable",
+                            "width": "200px",
+                            "edit": {
+                                "type": "SelectVariable"
+                            }
+                        },
+                        {
+                            "name": "Label",
+                            "caption": "Bezeichnung",
+                            "width": "120px",
+                            "edit": {
+                                "type": "ValidationTextBox"
+                            }
+                        },
+                        {
+                            "name": "ActiveValue",
+                            "caption": "Aktiv-Wert",
+                            "width": "80px",
+                            "edit": {
+                                "type": "ValidationTextBox"
+                            }
+                        },
+                        {
+                            "name": "ActiveIcon",
+                            "caption": "Aktiv-Icon",
+                            "width": "100px",
+                            "edit": {
+                                "type": "SelectIcon"
+                            }
+                        },
+                        {
+                            "name": "ActiveColor",
+                            "caption": "Aktiv-Farbe",
+                            "width": "80px",
+                            "edit": {
+                                "type": "SelectColor"
+                            }
+                        },
+                        {
+                            "name": "InactiveIcon",
+                            "caption": "Inaktiv-Icon",
+                            "width": "100px",
+                            "edit": {
+                                "type": "SelectIcon"
+                            }
+                        },
+                        {
+                            "name": "InactiveColor",
+                            "caption": "Inaktiv-Farbe",
+                            "width": "80px",
+                            "edit": {
+                                "type": "SelectColor"
+                            }
+                        }
+                    ],
+                    "values": []
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
+            "caption": "Visualisierung",
+            "items": [
+                {
+                    "type": "Select",
+                    "name": "GaugeStyle",
+                    "caption": "Gauge-Stil",
+                    "options": [
+                        { "caption": "270-Grad Bogen (Standard)", "value": 0 },
+                        { "caption": "180-Grad Halbkreis", "value": 1 },
+                        { "caption": "360-Grad Ring", "value": 2 }
+                    ]
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "SelectColor",
+                            "name": "ColorCold",
+                            "caption": "Farbe KALT"
+                        },
+                        {
+                            "type": "SelectColor",
+                            "name": "ColorWarm",
+                            "caption": "Farbe WARM"
+                        }
+                    ]
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "NumberSpinner",
+                            "name": "TempMin",
+                            "caption": "Minimum (Grad C)",
+                            "digits": 1,
+                            "minimum": -20.0,
+                            "maximum": 50.0
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "TempMax",
+                            "caption": "Maximum (Grad C)",
+                            "digits": 1,
+                            "minimum": -20.0,
+                            "maximum": 50.0
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "TempStep",
+                            "caption": "Schrittweite",
+                            "digits": 1,
+                            "minimum": 0.1,
+                            "maximum": 5.0
+                        }
+                    ]
+                },
+                {
+                    "type": "CheckBox",
+                    "name": "ShowLabels",
+                    "caption": "Beschriftungen unter Icons anzeigen"
+                }
+            ]
+        }
+    ],
+    "status": [
+        {
+            "code": 102,
+            "icon": "active",
+            "caption": "Aktiv"
+        },
+        {
+            "code": 104,
+            "icon": "inactive",
+            "caption": "Ist-Temperatur nicht konfiguriert"
+        },
+        {
+            "code": 200,
+            "icon": "error",
+            "caption": "Soll-Temperatur nicht konfiguriert"
+        }
+    ]
+}

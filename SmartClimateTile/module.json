@@ -1,0 +1,12 @@
+{
+    "id":            "{B8C4D5E6-F7A8-9012-3456-789ABCDEF012}",
+    "name":          "SmartClimateTile",
+    "type":          3,
+    "vendor":        "Florian Graßinger",
+    "aliases":       ["Klimaregler", "Climate Tile"],
+    "url":           "https://github.com/pinkerunicorn/SymconSmartTiles",
+    "implemented":   ["VisualizationTile"],
+    "compatibility": {
+        "version": "9.0"
+    }
+}

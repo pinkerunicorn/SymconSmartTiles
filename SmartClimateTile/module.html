@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Climate Tile</title>
+    <style>
+        :root {
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --gauge-bg: #e5e7eb;
+            --control-bg: rgba(255, 255, 255, 0.8);
+            --control-hover: rgba(255, 255, 255, 1);
+            --glow-color: rgba(239, 68, 68, 0);
+            --transition-speed: 0.3s;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-main: #f3f4f6;
+                --text-muted: #9ca3af;
+                --glass-bg: rgba(17, 24, 39, 0.65);
+                --glass-border: rgba(75, 85, 99, 0.4);
+                --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+                --gauge-bg: #374151;
+                --control-bg: rgba(31, 41, 55, 0.8);
+                --control-hover: rgba(55, 65, 81, 1);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: var(--font-family);
+            background: transparent;
+            overflow: hidden;
+            color: var(--text-main);
+            transition: color var(--transition-speed), background var(--transition-speed);
+        }
+
+        .tile-wrapper {
+            container-type: size;
+            container-name: tile;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10cqmin;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: var(--glass-shadow);
+            position: relative;
+        }
+
+        .glow-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+            transition: background 1s ease-out;
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            aspect-ratio: 1;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .svg-gauge {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            touch-action: none;
+        }
+
+        .gauge-bg-path {
+            fill: none;
+            stroke: var(--gauge-bg);
+            stroke-width: 12;
+            stroke-linecap: round;
+        }
+
+        .gauge-value-path {
+            fill: none;
+            stroke: url(#temp-gradient);
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.4s ease-out;
+        }
+
+        .gauge-handle {
+            fill: #ffffff;
+            stroke: var(--glass-border);
+            stroke-width: 2;
+            cursor: pointer;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            transition: transform 0.1s;
+        }
+        
+        .gauge-handle:active {
+            transform: scale(1.2);
+        }
+
+        .center-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            width: 70%;
+        }
+
+        .temp-actual {
+            font-size: clamp(2rem, 15cqw, 4rem);
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 2px;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: start;
+        }
+        
+        .temp-actual .unit {
+            font-size: 0.5em;
+            font-weight: 500;
+            margin-top: 0.1em;
+            color: var(--text-muted);
+        }
+
+        .temp-target {
+            font-size: clamp(0.9rem, 5cqw, 1.2rem);
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .env-info {
+            display: flex;
+            gap: 12px;
+            font-size: clamp(0.8rem, 4cqw, 1rem);
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .env-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .env-icon {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background: var(--glass-border);
+            color: var(--text-muted);
+            transition: all 0.3s;
+        }
+
+        .status-indicator.active {
+            background: var(--status-color-bg, var(--glass-border));
+            color: var(--status-color-fg, var(--text-main));
+        }
+
+        .status-indicator svg {
+            width: 12px;
+            height: 12px;
+            fill: currentColor;
+        }
+
+        .controls-row {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            z-index: 1;
+            margin-top: 10px;
+        }
+
+        .btn-temp {
+            display: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            background: var(--control-bg);
+            color: var(--text-main);
+            font-size: 1.5rem;
+            font-weight: 300;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        .btn-temp:active {
+            transform: scale(0.9);
+            background: var(--control-hover);
+        }
+
+        .modes-container {
+            display: flex;
+            gap: 8px;
+            flex-grow: 1;
+            justify-content: center;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding: 4px 0;
+        }
+        
+        .modes-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .mode-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            background: var(--control-bg);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            white-space: nowrap;
+        }
+
+        .mode-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .mode-btn.active {
+            background: var(--mode-color, var(--text-main));
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transform: scale(1.05);
+        }
+
+        .mode-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Container Queries */
+        @container tile (min-width: 300px) {
+            .btn-temp {
+                display: flex;
+            }
+        }
+
+        @container tile (max-width: 200px) {
+            .env-info, .status-indicators {
+                display: none;
+            }
+            .mode-btn span {
+                display: none; /* Hide text, show only icon */
+            }
+            .mode-btn {
+                padding: 8px;
+                border-radius: 50%;
+            }
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .pulse {
+            animation: pulse 0.3s ease-in-out;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="tile-wrapper">
+        <div class="glow-bg" id="glowBg"></div>
+        
+        <div class="gauge-container" id="gaugeContainer">
+            <svg class="svg-gauge" viewBox="0 0 200 200" id="svgGauge">
+                <defs>
+                    <linearGradient id="temp-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" id="gradStart" stop-color="#3B82F6" />
+                        <stop offset="100%" id="gradEnd" stop-color="#EF4444" />
+                    </linearGradient>
+                </defs>
+                <path class="gauge-bg-path" id="gaugeBgPath" />
+                <path class="gauge-value-path" id="gaugeValuePath" />
+                <circle class="gauge-handle" id="gaugeHandle" r="10" cx="0" cy="0" />
+            </svg>
+            
+            <div class="center-display">
+                <div class="temp-actual" id="tempActual">--<span class="unit">°C</span></div>
+                <div class="temp-target" id="tempTarget">Soll: --°</div>
+                
+                <div class="env-info" id="envInfo">
+                    <div class="env-item hidden" id="humidityWrapper">
+                        <svg class="env-icon" viewBox="0 0 24 24"><path d="M12,20A6,6 0 0,1 6,14C6,10 12,3.25 12,3.25C12,3.25 18,10 18,14A6,6 0 0,1 12,20Z"/></svg>
+                        <span id="humidityVal">--%</span>
+                    </div>
+                    <div class="env-item hidden" id="valveWrapper">
+                        <svg class="env-icon" viewBox="0 0 24 24"><path d="M17.58,4.09L15.34,6.33L18.4,9.39L16.27,11.5L13.1,8.33L10.97,10.46L14.04,13.53L11.91,15.65L8.74,12.47L6.61,14.61L9.68,17.68L7.43,19.92C5.96,18.46 5,16.42 5,14.17C5,9.65 8.65,6 13.17,6C14.88,6 16.44,6.5 17.7,7.31L18.96,6.05C18.66,5.32 18.17,4.65 17.58,4.09M22.03,12.18C22.03,17.06 18.06,21.03 13.18,21.03C11.5,21.03 9.96,20.5 8.7,19.65L10.16,18.18L13.23,21.25L15.35,19.13L12.28,16.05L14.41,13.92L17.47,17L19.6,14.87L16.53,11.8L18.66,9.67L21.72,12.74L23.95,10.5C23,8 21.36,5.92 19.2,4.45L17.74,5.91C20.35,7.03 22.03,9.45 22.03,12.18Z"/></svg>
+                        <span id="valveVal">--%</span>
+                    </div>
+                </div>
+                
+                <div class="status-indicators" id="statusIndicators"></div>
+            </div>
+        </div>
+        
+        <div class="controls-row">
+            <button class="btn-temp" id="btnMinus">−</button>
+            <div class="modes-container" id="modesContainer"></div>
+            <button class="btn-temp" id="btnPlus">+</button>
+        </div>
+    </div>
+
+    <script type="application/json" id="initial-data">__INITIAL_DATA__</script>
+    
+    <script>
+        // Icons dictionary for SVG paths
+        const ICONS = {
+            'Climate': '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3-11v2H9v-2h6z"/>',
+            'Window': '<path d="M11 20v-7H3v7h8zm2 0h8v-7h-8v7zm-2-9V4H3v7h8zm2 0h8V4h-8v7z"/>',
+            'Fire': '<path d="M17.58,4.09L15.34,6.33L18.4,9.39L16.27,11.5L13.1,8.33L10.97,10.46L14.04,13.53L11.91,15.65L8.74,12.47L6.61,14.61L9.68,17.68L7.43,19.92C5.96,18.46 5,16.42 5,14.17C5,9.65 8.65,6 13.17,6C14.88,6 16.44,6.5 17.7,7.31L18.96,6.05C18.66,5.32 18.17,4.65 17.58,4.09M22.03,12.18C22.03,17.06 18.06,21.03 13.18,21.03C11.5,21.03 9.96,20.5 8.7,19.65L10.16,18.18L13.23,21.25L15.35,19.13L12.28,16.05L14.41,13.92L17.47,17L19.6,14.87L16.53,11.8L18.66,9.67L21.72,12.74L23.95,10.5C23,8 21.36,5.92 19.2,4.45L17.74,5.91C20.35,7.03 22.03,9.45 22.03,12.18Z"/>',
+            'default': '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>'
+        };
+
+        // Fallback mock data for testing outside Symcon
+        const MOCK_DATA = {
+            actualTemp: 21.5,
+            targetTemp: 22.0,
+            humidity: 58,
+            valvePosition: 45,
+            hasHumidity: true,
+            hasValve: true,
+            activeMode: 0,
+            modes: [
+                {Value: 0, Caption: "Auto", Icon: "Climate", Color: 52224},
+                {Value: 1, Caption: "Man", Icon: "Fire", Color: 16744448}
+            ],
+            statusIndicators: [
+                {active: true, icon: "Window", color: 16744448, label: "Fenster"}
+            ],
+            config: {
+                gaugeStyle: 0,
+                colorCold: 3899638,
+                colorWarm: 15684676,
+                tempMin: 5.0,
+                tempMax: 30.0,
+                tempStep: 0.5,
+                showLabels: true
+            }
+        };
+
+        let state = {};
+        
+        // Gauge Settings
+        const GAUGE_CX = 100;
+        const GAUGE_CY = 100;
+        const GAUGE_R = 80;
+        let isDragging = false;
+        
+        // Element Refs
+        const els = {
+            svg: document.getElementById('svgGauge'),
+            bgPath: document.getElementById('gaugeBgPath'),
+            valPath: document.getElementById('gaugeValuePath'),
+            handle: document.getElementById('gaugeHandle'),
+            tempActual: document.getElementById('tempActual'),
+            tempTarget: document.getElementById('tempTarget'),
+            humidityWrapper: document.getElementById('humidityWrapper'),
+            humidityVal: document.getElementById('humidityVal'),
+            valveWrapper: document.getElementById('valveWrapper'),
+            valveVal: document.getElementById('valveVal'),
+            statusIndicators: document.getElementById('statusIndicators'),
+            modesContainer: document.getElementById('modesContainer'),
+            glowBg: document.getElementById('glowBg'),
+            gradStart: document.getElementById('gradStart'),
+            gradEnd: document.getElementById('gradEnd'),
+            btnMinus: document.getElementById('btnMinus'),
+            btnPlus: document.getElementById('btnPlus')
+        };
+
+        // Utility: Int to Hex Color
+        function intToHex(intColor) {
+            let hex = Math.abs(intColor).toString(16);
+            while (hex.length < 6) hex = "0" + hex;
+            return "#" + hex;
+        }
+
+        // Utility: Animate numbers
+        function animateValue(obj, start, end, duration, decimals = 1) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                // easeOutQuad
+                const easeProgress = progress * (2 - progress);
+                const current = start + (end - start) * easeProgress;
+                
+                // Preserve the unit span
+                const numStr = current.toFixed(decimals);
+                obj.innerHTML = numStr + (obj === els.tempActual ? '<span class="unit">°C</span>' : '');
+                
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    obj.innerHTML = end.toFixed(decimals) + (obj === els.tempActual ? '<span class="unit">°C</span>' : '');
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Gauge Math
+        function getGaugeAngles(style) {
+            switch(style) {
+                case 1: return { start: -90, end: 90 };     // 180°
+                case 2: return { start: 0, end: 359.99 };   // 360°
+                case 0: 
+                default: return { start: -135, end: 135 };  // 270°
+            }
+        }
+
+        function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+            const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+            return {
+                x: centerX + (radius * Math.cos(angleInRadians)),
+                y: centerY + (radius * Math.sin(angleInRadians))
+            };
+        }
+
+        function describeArc(x, y, radius, startAngle, endAngle) {
+            const start = polarToCartesian(x, y, radius, endAngle);
+            const end = polarToCartesian(x, y, radius, startAngle);
+            const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+            return [
+                "M", start.x, start.y, 
+                "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y
+            ].join(" ");
+        }
+
+        function valueToAngle(val) {
+            const angles = getGaugeAngles(state.config.gaugeStyle);
+            const range = state.config.tempMax - state.config.tempMin;
+            const percentage = Math.max(0, Math.min(1, (val - state.config.tempMin) / range));
+            return angles.start + (percentage * (angles.end - angles.start));
+        }
+
+        function angleToValue(angle) {
+            const angles = getGaugeAngles(state.config.gaugeStyle);
+            let normalizedAngle = angle;
+            
+            // Normalize for 360 mode if needed
+            if (state.config.gaugeStyle === 2) {
+                if (normalizedAngle < 0) normalizedAngle += 360;
+            }
+            
+            let percentage = (normalizedAngle - angles.start) / (angles.end - angles.start);
+            percentage = Math.max(0, Math.min(1, percentage));
+            
+            let val = state.config.tempMin + (percentage * (state.config.tempMax - state.config.tempMin));
+            
+            // Snap to step
+            const step = state.config.tempStep;
+            val = Math.round(val / step) * step;
+            return val;
+        }
+
+        function getAngleFromEvent(e) {
+            const rect = els.svg.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const x = clientX - rect.left - (rect.width / 2);
+            const y = clientY - rect.top - (rect.height / 2);
+            
+            let angle = Math.atan2(y, x) * 180 / Math.PI + 90;
+            if (angle > 180 && state.config.gaugeStyle !== 2) angle -= 360;
+            return angle;
+        }
+
+        // Render functions
+        function renderGaugeStatic() {
+            const angles = getGaugeAngles(state.config.gaugeStyle);
+            els.bgPath.setAttribute('d', describeArc(GAUGE_CX, GAUGE_CY, GAUGE_R, angles.start, angles.end));
+            
+            els.gradStart.setAttribute('stop-color', intToHex(state.config.colorCold));
+            els.gradEnd.setAttribute('stop-color', intToHex(state.config.colorWarm));
+            
+            if (state.config.gaugeStyle === 1) { // 180° - move center display up a bit
+                document.querySelector('.center-display').style.top = '40%';
+            } else {
+                document.querySelector('.center-display').style.top = '50%';
+            }
+        }
+
+        function updateGaugeValue(temp, animate = true) {
+            if (!animate) els.valPath.style.transition = 'none';
+            
+            const angles = getGaugeAngles(state.config.gaugeStyle);
+            const endAngle = valueToAngle(temp);
+            
+            if (Math.abs(endAngle - angles.start) > 0.1) {
+                els.valPath.setAttribute('d', describeArc(GAUGE_CX, GAUGE_CY, GAUGE_R, angles.start, endAngle));
+                els.valPath.style.display = 'block';
+            } else {
+                els.valPath.style.display = 'none';
+            }
+            
+            const handlePos = polarToCartesian(GAUGE_CX, GAUGE_CY, GAUGE_R, endAngle);
+            els.handle.setAttribute('cx', handlePos.x);
+            els.handle.setAttribute('cy', handlePos.y);
+            
+            els.tempTarget.textContent = 'Soll: ' + temp.toFixed(1) + '°';
+            
+            if (!animate) {
+                // Force reflow to clear transition
+                void els.valPath.offsetWidth;
+                els.valPath.style.transition = '';
+            }
+        }
+
+        function renderState(newState, oldState = {}) {
+            // Static config updates
+            if (!oldState.config || JSON.stringify(newState.config) !== JSON.stringify(oldState.config)) {
+                renderGaugeStatic();
+            }
+
+            // Actual Temp
+            if (newState.actualTemp !== oldState.actualTemp) {
+                const oldT = oldState.actualTemp || newState.actualTemp;
+                animateValue(els.tempActual, oldT, newState.actualTemp, 500, 1);
+            }
+
+            // Target Temp (only update if not dragging)
+            if (newState.targetTemp !== oldState.targetTemp && !isDragging) {
+                updateGaugeValue(newState.targetTemp);
+            }
+
+            // Humidity & Valve
+            if (newState.hasHumidity) {
+                els.humidityWrapper.classList.remove('hidden');
+                els.humidityVal.textContent = newState.humidity + '%';
+            } else {
+                els.humidityWrapper.classList.add('hidden');
+            }
+
+            if (newState.hasValve) {
+                els.valveWrapper.classList.remove('hidden');
+                els.valveVal.textContent = newState.valvePosition + '%';
+                
+                // Glow effect proportional to valve position
+                if (newState.valvePosition > 0) {
+                    const alpha = Math.min(0.6, newState.valvePosition / 100);
+                    const hexColor = intToHex(state.config.colorWarm);
+                    // Convert hex to rgb for alpha
+                    const r = parseInt(hexColor.slice(1,3), 16);
+                    const g = parseInt(hexColor.slice(3,5), 16);
+                    const b = parseInt(hexColor.slice(5,7), 16);
+                    els.glowBg.style.background = adial-gradient(circle, rgba(,,,) 0%, transparent 70%);
+                } else {
+                    els.glowBg.style.background = 'transparent';
+                }
+            } else {
+                els.valveWrapper.classList.add('hidden');
+                els.glowBg.style.background = 'transparent';
+            }
+
+            // Status Indicators
+            if (JSON.stringify(newState.statusIndicators) !== JSON.stringify(oldState.statusIndicators)) {
+                els.statusIndicators.innerHTML = '';
+                (newState.statusIndicators || []).forEach(ind => {
+                    const div = document.createElement('div');
+                    div.className = 'status-indicator pulse';
+                    if (ind.active) {
+                        div.classList.add('active');
+                        const hex = intToHex(ind.color);
+                        div.style.setProperty('--status-color-bg', hex + '33'); // 20% opacity
+                        div.style.setProperty('--status-color-fg', hex);
+                    }
+                    const iconPath = ICONS[ind.icon] || ICONS['default'];
+                    div.innerHTML = <svg viewBox="0 0 24 24"></svg> + (ind.label ? <span></span> : '');
+                    els.statusIndicators.appendChild(div);
+                });
+            }
+
+            // Modes
+            if (JSON.stringify(newState.modes) !== JSON.stringify(oldState.modes) || newState.activeMode !== oldState.activeMode) {
+                els.modesContainer.innerHTML = '';
+                (newState.modes || []).forEach(mode => {
+                    const btn = document.createElement('button');
+                    btn.className = 'mode-btn' + (mode.Value === newState.activeMode ? ' active' : '');
+                    
+                    if (mode.Value === newState.activeMode) {
+                        btn.style.setProperty('--mode-color', intToHex(mode.Color));
+                        btn.classList.add('pulse');
+                    }
+                    
+                    const iconPath = ICONS[mode.Icon] || ICONS['default'];
+                    btn.innerHTML = <svg viewBox="0 0 24 24"></svg> + 
+                                   (newState.config.showLabels ? <span></span> : '');
+                    
+                    btn.onclick = () => {
+                        if (typeof requestAction === 'function') requestAction('SetMode', mode.Value);
+                        
+                        // Optimistic update
+                        const oldActive = state.activeMode;
+                        state.activeMode = mode.Value;
+                        renderState(state, {...state, activeMode: oldActive});
+                    };
+                    
+                    els.modesContainer.appendChild(btn);
+                });
+            }
+        }
+
+        // Global Symcon Callback
+        window.handleMessage = function(payload) {
+            try {
+                let data = typeof payload === 'string' ? JSON.parse(payload) : payload;
+                const oldState = {...state};
+                state = {...state, ...data};
+                // Ensure config exists if partial update
+                if(data.config) state.config = {...oldState.config, ...data.config};
+                renderState(state, oldState);
+            } catch (e) {
+                console.error("Error parsing message", e);
+            }
+        };
+
+        // Interactions
+        function handleDragStart(e) {
+            isDragging = true;
+            handleDragMove(e);
+        }
+
+        function handleDragMove(e) {
+            if (!isDragging) return;
+            if (e.cancelable) e.preventDefault(); // Prevent scrolling on touch
+            
+            let angle = getAngleFromEvent(e);
+            let val = angleToValue(angle);
+            
+            // Constrain
+            val = Math.max(state.config.tempMin, Math.min(state.config.tempMax, val));
+            
+            // Optimistic visual update without animation for smooth dragging
+            updateGaugeValue(val, false);
+            
+            // Debounced state update to avoid spamming variables
+            state.targetTemp = val;
+        }
+
+        function handleDragEnd(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            // Send action to Symcon
+            if (typeof requestAction === 'function') {
+                requestAction('SetTemperature', state.targetTemp);
+            }
+        }
+
+        // Events
+        els.svg.addEventListener('mousedown', handleDragStart);
+        els.svg.addEventListener('touchstart', handleDragStart, {passive: false});
+        
+        window.addEventListener('mousemove', handleDragMove);
+        window.addEventListener('touchmove', handleDragMove, {passive: false});
+        
+        window.addEventListener('mouseup', handleDragEnd);
+        window.addEventListener('touchend', handleDragEnd);
+
+        els.btnMinus.addEventListener('click', () => {
+            let newVal = Math.max(state.config.tempMin, state.targetTemp - state.config.tempStep);
+            state.targetTemp = newVal;
+            updateGaugeValue(newVal);
+            if (typeof requestAction === 'function') requestAction('SetTemperature', newVal);
+        });
+
+        els.btnPlus.addEventListener('click', () => {
+            let newVal = Math.min(state.config.tempMax, state.targetTemp + state.config.tempStep);
+            state.targetTemp = newVal;
+            updateGaugeValue(newVal);
+            if (typeof requestAction === 'function') requestAction('SetTemperature', newVal);
+        });
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            let initDataStr = document.getElementById('initial-data').textContent.trim();
+            if (initDataStr === '__INITIAL_DATA__') {
+                // Not in Symcon yet, use mock data
+                state = MOCK_DATA;
+            } else {
+                try {
+                    state = JSON.parse(initDataStr);
+                } catch(e) {
+                    console.error("Init JSON parse error", e);
+                    state = MOCK_DATA;
+                }
+            }
+            renderState(state);
+            updateGaugeValue(state.targetTemp, false); // Initial placement without transition
+        });
+    </script>
+</body>
+</html>
