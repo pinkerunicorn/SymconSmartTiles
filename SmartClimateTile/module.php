@@ -294,7 +294,15 @@ class SmartClimateTile extends IPSModuleStrict
             $modes = $this->ExtractModesFromPresentation($customPresentation);
         }
 
-        // 2. Versuch: Profil auslesen
+        // 2. Versuch: Native VariablePresentation (z.B. Homematic, Gardena etc.)
+        if (empty($modes)) {
+            $nativePresentation = $variable['VariablePresentation'] ?? [];
+            if (!empty($nativePresentation)) {
+                $modes = $this->ExtractModesFromPresentation($nativePresentation);
+            }
+        }
+
+        // 3. Versuch: Profil auslesen
         if (empty($modes)) {
             $profileName = $variable['VariableCustomProfile'] ?: ($variable['VariableProfile'] ?? '');
             if ($profileName !== '' && @IPS_VariableProfileExists($profileName)) {
@@ -351,18 +359,21 @@ class SmartClimateTile extends IPSModuleStrict
     {
         $modes = [];
 
-        // ENUMERATION mit OPTIONS
+        // ENUMERATION / native Presentation mit OPTIONS
         if (isset($presentation['OPTIONS'])) {
             $options = $presentation['OPTIONS'];
             if (is_string($options)) {
                 $options = json_decode($options, true) ?: [];
             }
             foreach ($options as $opt) {
+                // Value kann String (z.B. Homematic: "AUTOMATIC") oder Integer sein
+                $value = $opt['Value'] ?? 0;
+                $color = $opt['Color'] ?? -1;
                 $modes[] = [
-                    'Value'   => $opt['Value'] ?? 0,
-                    'Caption' => $opt['Caption'] ?? '',
+                    'Value'   => $value,
+                    'Caption' => $opt['Caption'] ?? (string) $value,
                     'Icon'    => ($opt['IconActive'] ?? false) ? ($opt['IconValue'] ?? '') : '',
-                    'Color'   => $opt['Color'] ?? 0,
+                    'Color'   => ($color === -1) ? 0 : $color,
                 ];
             }
         }
@@ -375,11 +386,12 @@ class SmartClimateTile extends IPSModuleStrict
             }
             foreach ($intervals as $intv) {
                 if ($intv['ConstantActive'] ?? false) {
+                    $colorVal = ($intv['ColorActive'] ?? false) ? ($intv['ColorValue'] ?? 0) : 0;
                     $modes[] = [
                         'Value'   => $intv['IntervalMinValue'] ?? 0,
                         'Caption' => $intv['ConstantValue'] ?? '',
                         'Icon'    => ($intv['IconActive'] ?? false) ? ($intv['IconValue'] ?? '') : '',
-                        'Color'   => $intv['ColorActive'] ?? false ? ($intv['ColorValue'] ?? 0) : 0,
+                        'Color'   => $colorVal,
                     ];
                 }
             }
