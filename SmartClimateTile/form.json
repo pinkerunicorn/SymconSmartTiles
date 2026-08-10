@@ -35,7 +35,7 @@
                 },
                 {
                     "type": "Label",
-                    "caption": "───── Betriebsmodi ─────",
+                    "caption": "Betriebsmodi",
                     "bold": true
                 },
                 {
@@ -76,6 +76,7 @@
                             "name": "Value",
                             "caption": "Wert",
                             "width": "80px",
+                            "add": 0,
                             "edit": {
                                 "type": "NumberSpinner"
                             }
@@ -84,6 +85,7 @@
                             "name": "Caption",
                             "caption": "Bezeichnung",
                             "width": "auto",
+                            "add": "",
                             "edit": {
                                 "type": "ValidationTextBox"
                             }
@@ -92,6 +94,7 @@
                             "name": "Icon",
                             "caption": "Icon",
                             "width": "120px",
+                            "add": "",
                             "edit": {
                                 "type": "SelectIcon"
                             }
@@ -100,6 +103,7 @@
                             "name": "Color",
                             "caption": "Farbe",
                             "width": "100px",
+                            "add": -1,
                             "edit": {
                                 "type": "SelectColor"
                             }
@@ -129,6 +133,7 @@
                             "name": "VariableID",
                             "caption": "Variable",
                             "width": "200px",
+                            "add": 0,
                             "edit": {
                                 "type": "SelectVariable"
                             }
@@ -137,6 +142,7 @@
                             "name": "Label",
                             "caption": "Bezeichnung",
                             "width": "120px",
+                            "add": "",
                             "edit": {
                                 "type": "ValidationTextBox"
                             }
@@ -145,6 +151,7 @@
                             "name": "ActiveValue",
                             "caption": "Aktiv-Wert",
                             "width": "80px",
+                            "add": "",
                             "edit": {
                                 "type": "ValidationTextBox"
                             }
@@ -153,6 +160,7 @@
                             "name": "ActiveIcon",
                             "caption": "Aktiv-Icon",
                             "width": "100px",
+                            "add": "",
                             "edit": {
                                 "type": "SelectIcon"
                             }
@@ -161,6 +169,7 @@
                             "name": "ActiveColor",
                             "caption": "Aktiv-Farbe",
                             "width": "80px",
+                            "add": -1,
                             "edit": {
                                 "type": "SelectColor"
                             }
@@ -169,6 +178,7 @@
                             "name": "InactiveIcon",
                             "caption": "Inaktiv-Icon",
                             "width": "100px",
+                            "add": "",
                             "edit": {
                                 "type": "SelectIcon"
                             }
@@ -177,6 +187,7 @@
                             "name": "InactiveColor",
                             "caption": "Inaktiv-Farbe",
                             "width": "80px",
+                            "add": -1,
                             "edit": {
                                 "type": "SelectColor"
                             }

@@ -423,25 +423,25 @@
         const GAUGE_R = 80;
         let isDragging = false;
         
-        // Element Refs
+        // Element Refs – lazy getters, damit DOM sicher fertig ist
         const els = {
-            svg: document.getElementById('svgGauge'),
-            bgPath: document.getElementById('gaugeBgPath'),
-            valPath: document.getElementById('gaugeValuePath'),
-            handle: document.getElementById('gaugeHandle'),
-            tempActual: document.getElementById('tempActual'),
-            tempTarget: document.getElementById('tempTarget'),
-            humidityWrapper: document.getElementById('humidityWrapper'),
-            humidityVal: document.getElementById('humidityVal'),
-            valveWrapper: document.getElementById('valveWrapper'),
-            valveVal: document.getElementById('valveVal'),
-            statusIndicators: document.getElementById('statusIndicators'),
-            modesContainer: document.getElementById('modesContainer'),
-            glowBg: document.getElementById('glowBg'),
-            gradStart: document.getElementById('gradStart'),
-            gradEnd: document.getElementById('gradEnd'),
-            btnMinus: document.getElementById('btnMinus'),
-            btnPlus: document.getElementById('btnPlus')
+            get svg()              { return document.getElementById('svgGauge'); },
+            get bgPath()          { return document.getElementById('gaugeBgPath'); },
+            get valPath()         { return document.getElementById('gaugeValuePath'); },
+            get handle()          { return document.getElementById('gaugeHandle'); },
+            get tempActual()      { return document.getElementById('tempActual'); },
+            get tempTarget()      { return document.getElementById('tempTarget'); },
+            get humidityWrapper() { return document.getElementById('humidityWrapper'); },
+            get humidityVal()     { return document.getElementById('humidityVal'); },
+            get valveWrapper()    { return document.getElementById('valveWrapper'); },
+            get valveVal()        { return document.getElementById('valveVal'); },
+            get statusIndicators(){ return document.getElementById('statusIndicators'); },
+            get modesContainer()  { return document.getElementById('modesContainer'); },
+            get glowBg()          { return document.getElementById('glowBg'); },
+            get gradStart()       { return document.getElementById('gradStart'); },
+            get gradEnd()         { return document.getElementById('gradEnd'); },
+            get btnMinus()        { return document.getElementById('btnMinus'); },
+            get btnPlus()         { return document.getElementById('btnPlus'); }
         };
 
         // Utility: Int to Hex Color
