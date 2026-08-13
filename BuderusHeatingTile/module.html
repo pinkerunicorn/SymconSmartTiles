@@ -41,8 +41,9 @@ html, body {
     min-height: 100%;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Fix: Don't center vertically to avoid huge gaps if widget is tall */
     padding: 10px;
+    padding-top: 15px; /* Slight offset from the Symcon title */
 }
 
 .tile-content {
