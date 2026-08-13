@@ -213,23 +213,25 @@
         const rawData = '__INITIAL_DATA__';
         const C = 2 * Math.PI * 50; // Circumference for r=50
 
-        function render(dataStr) {
+        function render(payload) {
             try {
-                // Determine if dataStr is base64 (initial data) or plain JSON string (websocket)
-                let decoded = dataStr;
-                if (!decoded.startsWith('{') && !decoded.startsWith('[')) {
-                    // It's base64 from PHP's __INITIAL_DATA__
-                    try {
-                        // Decode base64 and support UTF-8 characters
-                        const binString = atob(decoded);
-                        const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0));
-                        decoded = new TextDecoder().decode(bytes);
-                    } catch (e) {
-                        // If it fails, fallback (e.g. not base64)
-                        console.error("Base64 decode failed", e);
+                let data;
+                if (typeof payload === 'string') {
+                    let decoded = payload;
+                    if (!decoded.startsWith('{') && !decoded.startsWith('[')) {
+                        try {
+                            const binString = atob(decoded);
+                            const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0));
+                            decoded = new TextDecoder().decode(bytes);
+                        } catch (e) {
+                            console.error("Base64 decode failed", e);
+                        }
                     }
+                    data = JSON.parse(decoded);
+                } else {
+                    data = payload;
                 }
-                const data = JSON.parse(decoded);
+                
                 const container = document.getElementById('app');
                 container.innerHTML = '';
                 
@@ -306,7 +308,7 @@
 
         // Symcon Message Handler
         window.addEventListener('message', function(event) {
-            if (typeof event.data === 'string') {
+            if (event.data) {
                 render(event.data);
             }
         });
