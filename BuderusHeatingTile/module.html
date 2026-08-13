@@ -38,7 +38,6 @@ html, body {
 /* Kachel Container mit Max-Width damit es in breiten Kacheln zentriert und gut aussieht */
 .tile-wrapper {
     width: 100%;
-    min-height: 100%;
     display: flex;
     justify-content: center;
     align-items: flex-start; /* Fix: Don't center vertically to avoid huge gaps if widget is tall */
@@ -49,7 +48,6 @@ html, body {
 .tile-content {
     width: 100%;
     max-width: 600px; /* Verhindert das extreme Strecken */
-    height: 100%;
     display: flex;
     flex-direction: column;
     gap: 15px;
