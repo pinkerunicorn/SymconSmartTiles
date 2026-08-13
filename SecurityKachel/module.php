@@ -157,7 +157,7 @@ class SecurityKachel extends IPSModuleStrict
         $this->DA_SetAvailable(true);
     }
 
-    public function RequestAction($Ident, $Value)
+    public function RequestAction(string $Ident, $Value): void
     {
         if ($Ident === 'SetPresenceMode') {
             $shcInstances = IPS_GetInstanceListByModuleID('{460D7C60-0766-4534-BFD8-5920737B1845}');
