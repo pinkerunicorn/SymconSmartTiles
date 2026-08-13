@@ -210,12 +210,17 @@
     <div class="container" id="app"></div>
 
     <script>
-        const initialData = '__INITIAL_DATA__';
+        const rawData = '__INITIAL_DATA__';
         const C = 2 * Math.PI * 50; // Circumference for r=50
 
         function render(dataStr) {
             try {
-                const data = JSON.parse(dataStr);
+                let decoded = dataStr;
+                // If it came from __INITIAL_DATA__, it might have HTML entities
+                if (decoded.includes('&quot;')) {
+                    decoded = decoded.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+                }
+                const data = JSON.parse(decoded);
                 const container = document.getElementById('app');
                 container.innerHTML = '';
                 
@@ -283,8 +288,8 @@
             }
         }
 
-        if (initialData !== '__INITIAL_DATA__') {
-            render(initialData);
+        if (rawData !== '__INITIAL_DATA__') {
+            render(rawData);
         }
 
         // Symcon Message Handler
