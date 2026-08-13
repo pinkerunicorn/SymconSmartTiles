@@ -127,7 +127,21 @@ class SecurityKachel extends IPSModuleStrict
                 else if (!empty($contact['OnOff_VarID'])) $varId = (int)$contact['OnOff_VarID'];
                 
                 if ($varId > 0 && IPS_VariableExists($varId)) {
-                    if (GetValue($varId)) {
+                    $val = GetValue($varId);
+                    $closedDef = strtolower(trim((string)($contact['ClosedValue'] ?? 'false')));
+                    
+                    $isOpen = true; // Default assumption
+                    
+                    if (is_bool($val)) {
+                        // Wenn der User "closed" oder "0" eingetragen hat, gehen wir davon aus, dass false = zu bedeutet.
+                        $isClosedExpected = in_array($closedDef, ['false', '0', 'closed', 'zu', '']);
+                        $isOpen = ($val !== $isClosedExpected);
+                    } else {
+                        // Bei Integer/String strikter Vergleich als String
+                        $isOpen = (strtolower((string)$val) !== $closedDef);
+                    }
+
+                    if ($isOpen) {
                         $payload['openWindows'][] = $contact['name'] ?? 'Unbekanntes Fenster';
                     }
                 }
