@@ -1,0 +1,17 @@
+{
+    "id": "{429EE3AC-F852-4324-9A69-D5042746B9DD}",
+    "name": "EnergyDistributionTile",
+    "type": 3,
+    "vendor": "Florian Graßinger",
+    "aliases": [
+        "Energieverteilung"
+    ],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [
+        "{00000000-0000-0000-0000-000000000000}"
+    ],
+    "prefix": "EDT",
+    "author": "Florian Graßinger",
+    "url": "https://github.com/pinkerunicorn/SymconSmartTiles/tree/main/EnergyDistributionTile"
+}

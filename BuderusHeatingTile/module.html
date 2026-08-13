@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   BUDERUS HEATING TILE – IP-Symcon 9 HTML-SDK (PREMIUM DESIGN)
+   ═══════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --card-color: #1e1e2e;
+    --content-color: #cdd6f4;
+    --accent-color: #f38ba8;
+    --bg-color: #181825;
+    
+    --flame-orange: #ff6b35;
+    --flame-red: #c0392b;
+    --water-blue: #3498db;
+    --water-cool: #74b9ff;
+    --eco-green: #00b894;
+    --glass-bg: rgba(255,255,255,0.03);
+    --glass-border: rgba(255,255,255,0.06);
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    color: var(--content-color);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Kachel Container mit Max-Width damit es in breiten Kacheln zentriert und gut aussieht */
+.tile-wrapper {
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+
+.tile-content {
+    width: 100%;
+    max-width: 600px; /* Verhindert das extreme Strecken */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* ── HEADER ── */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.header-title svg {
+    width: 20px;
+    height: 20px;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+}
+.status-badge.heating {
+    background: rgba(255, 107, 53, 0.15);
+    color: var(--flame-orange);
+    border-color: rgba(255, 107, 53, 0.3);
+    box-shadow: 0 0 10px rgba(255, 107, 53, 0.2);
+}
+
+/* ── HAUPTBEREICH (Thermostat + Werte) ── */
+.main-area {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-around;
+    gap: 20px;
+    flex: 1;
+}
+
+.thermostat-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-shrink: 0;
+}
+
+.temp-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    color: var(--content-color);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.temp-btn:hover {
+    background: rgba(255,255,255,0.1);
+    transform: scale(1.05);
+}
+
+.temp-btn:active {
+    transform: scale(0.95);
+}
+
+.thermostat-dial {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
+    box-shadow: 
+        inset 0 0 15px rgba(0,0,0,0.5),
+        0 10px 20px rgba(0,0,0,0.3),
+        0 0 0 1px rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: box-shadow 0.5s ease;
+}
+
+.thermostat-dial.active {
+    box-shadow: 
+        inset 0 0 20px rgba(255,107,53,0.2),
+        0 0 30px rgba(255,107,53,0.3),
+        0 0 0 1px rgba(255,107,53,0.4);
+}
+
+.dial-value {
+    font-size: 32px;
+    font-weight: 300;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+.dial-unit { font-size: 16px; opacity: 0.5; }
+.dial-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.5;
+}
+.dial-flame {
+    position: absolute;
+    bottom: -10px;
+    width: 30px;
+    height: 30px;
+    opacity: 0.1;
+    color: var(--content-color);
+    transition: all 0.5s ease;
+}
+.thermostat-dial.active .dial-flame {
+    opacity: 1;
+    color: var(--flame-orange);
+    filter: drop-shadow(0 0 5px var(--flame-orange));
+    animation: pulse-flame 2s infinite alternate;
+}
+
+@keyframes pulse-flame {
+    0% { transform: scale(1); filter: drop-shadow(0 0 5px var(--flame-orange)); }
+    100% { transform: scale(1.1); filter: drop-shadow(0 0 12px var(--flame-red)); }
+}
+
+/* Secondary Metrics Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    flex: 1;
+    min-width: 220px;
+}
+
+.metric-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.metric-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-val {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.metric-card.flow::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--flame-orange); opacity: 0.5; }
+.metric-card.return::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--water-blue); opacity: 0.5; }
+.metric-card.outdoor::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--eco-green); opacity: 0.5; }
+
+/* ── CONTROLS & DHW ── */
+.controls-area {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* Mode Switcher */
+.mode-switcher {
+    display: flex;
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+    padding: 4px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.mode-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+.mode-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.mode-btn.active { background: rgba(255,255,255,0.15); color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+.mode-btn[data-mode="0"].active { color: var(--eco-green); } /* Auto */
+
+/* DHW Boost Button */
+.dhw-btn {
+    background: rgba(52, 152, 219, 0.15);
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    color: var(--water-cool);
+    border-radius: 10px;
+    padding: 0 15px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.dhw-btn:hover {
+    background: rgba(52, 152, 219, 0.25);
+    transform: translateY(-1px);
+}
+
+/* Pump Bar */
+.pump-container {
+    background: var(--glass-bg);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--glass-border);
+}
+.pump-track {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.pump-fill {
+    height: 100%;
+    background: var(--water-blue);
+    width: 0%;
+    transition: width 1s ease;
+}
+.pump-lbl { font-size: 11px; opacity: 0.6; }
+.pump-val { font-size: 12px; font-weight: bold; width: 35px; text-align: right; }
+
+/* Overlay wenn keine ID konfiguriert ist */
+.setup-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(20,20,30,0.9);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    color: #fff;
+    border-radius: 14px;
+}
+.setup-overlay i { font-size: 40px; color: var(--flame-orange); margin-bottom: 15px; }
+.setup-overlay h3 { margin-bottom: 5px; font-weight: 600; }
+.setup-overlay p { font-size: 12px; opacity: 0.7; }
+</style>
+</head>
+<body>
+
+<div class="setup-overlay" id="setup-overlay" style="display: none;">
+    <i class="fa-light fa-circle-exclamation"></i>
+    <h3>Keine Datenquelle</h3>
+    <p>Bitte wähle in den Einstellungen der Instanz die EMSESP Quell-Instanz aus.</p>
+</div>
+
+<div class="tile-wrapper">
+    <div class="tile-content">
+        
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-title">
+                <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="22" height="22" rx="5" fill="rgba(255,107,53,0.18)"/>
+                    <path d="M11 4 C8.5 6 7 8 7 10.5 C7 13.5 8.8 16 11 16 C13.2 16 15 13.5 15 10.5 C15 8 13.5 6 11 4Z" fill="#ff6b35" opacity="0.9"/>
+                    <path d="M11 7 C9.8 8.5 9 10 9 11.5 C9 13.2 9.9 14.5 11 14.5 C12.1 14.5 13 13.2 13 11.5 C13 10 12.2 8.5 11 7Z" fill="#f9ca24"/>
+                </svg>
+                <span id="device-name">__DEVICE_NAME__</span>
+            </div>
+            <div class="status-badge" id="status-badge">Standby</div>
+        </div>
+
+        <!-- MAIN AREA -->
+        <div class="main-area">
+            
+            <!-- Thermostat Dial -->
+            <div class="thermostat-wrapper">
+                <button class="temp-btn" onclick="adjustTemp(-0.5)"><i class="fa-light fa-minus"></i></button>
+                <div class="thermostat-dial" id="thermo-dial">
+                    <div class="dial-value"><span id="val-setpoint">--</span><span class="dial-unit">°</span></div>
+                    <div class="dial-label">Soll-Temp</div>
+                    
+                    <svg class="dial-flame" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.66 11.48c-1.4-1.9-2.93-3.23-3.32-6.52-.05-.41-.42-.71-.83-.7-.41.01-.76.32-.8.74-.29 3.01-1.74 4.54-3.1 6.35C8.36 13.01 7.5 14.74 7.5 16.5c0 2.49 2.01 4.5 4.5 4.5s4.5-2.01 4.5-4.5c0-1.76-.86-3.49-2.11-5.12c-.22-.3-.66-.36-.96-.13-.3.23-.36.65-.13.96 1.05 1.36 1.7 2.76 1.7 4.14 0 1.93-1.57 3.5-3.5 3.5s-3.5-1.57-3.5-3.5c0-1.46.68-2.92 1.76-4.32 1.14-1.5 2.29-2.82 2.68-5.34 1.13 2.59 2.72 4.17 3.86 5.71.21.29.62.36.92.15.31-.22.38-.63.16-.92z"/>
+                    </svg>
+                </div>
+                <button class="temp-btn" onclick="adjustTemp(0.5)"><i class="fa-light fa-plus"></i></button>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="metrics-grid">
+                <div class="metric-card flow">
+                    <div class="metric-header"><i class="fa-light fa-arrow-up" style="color:var(--flame-orange)"></i> Vorlauf</div>
+                    <div class="metric-val"><span id="val-flow">--</span> °C</div>
+                </div>
+                <div class="metric-card return">
+                    <div class="metric-header"><i class="fa-light fa-arrow-down" style="color:var(--water-blue)"></i> Rücklauf</div>
+                    <div class="metric-val"><span id="val-return">--</span> °C</div>
+                </div>
+                <div class="metric-card outdoor">
+                    <div class="metric-header"><i class="fa-light fa-cloud" style="color:var(--eco-green)"></i> Außen</div>
+                    <div class="metric-val"><span id="val-outdoor">--</span> °C</div>
+                </div>
+                <div class="metric-card dhw">
+                    <div class="metric-header"><i class="fa-light fa-droplet" style="color:var(--water-blue)"></i> Warmwasser</div>
+                    <div class="metric-val"><span id="val-dhw">--</span> °C</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- PUMPEN INFO -->
+        <div class="pump-container" id="pump-section">
+            <i class="fa-light fa-rotate" id="pump-icon"></i>
+            <span class="pump-lbl">Pumpe</span>
+            <div class="pump-track"><div class="pump-fill" id="pump-fill"></div></div>
+            <span class="pump-val" id="pump-val">0%</span>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls-area">
+            <div class="mode-switcher">
+                <button class="mode-btn" data-mode="0" onclick="setMode(0)"><i class="fa-light fa-clock"></i> Auto</button>
+                <button class="mode-btn" data-mode="1" onclick="setMode(1)"><i class="fa-light fa-sun"></i> Tag</button>
+                <button class="mode-btn" data-mode="2" onclick="setMode(2)"><i class="fa-light fa-moon"></i> Nacht</button>
+                <button class="mode-btn" data-mode="3" onclick="setMode(3)"><i class="fa-light fa-power-off"></i> Aus</button>
+            </div>
+
+            <button class="dhw-btn" id="dhw-section" onclick="triggerDHWBoost()">
+                <i class="fa-light fa-bolt"></i> WW Boost
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const SHOW_DHW = __SHOW_DHW__;
+const SHOW_PUMP = __SHOW_PUMP__;
+
+let state = {
+    curflowtemp: null,
+    rettemp: null,
+    outdoortemp: null,
+    seltemp: null,
+    heatingactive: false,
+    heatingpumpmod: 0,
+    mode: 0,
+    tapwateractive: false,
+    wwcharge: false
+};
+
+(function init() {
+    if (!SHOW_DHW) {
+        document.getElementById('dhw-section').style.display = 'none';
+        document.querySelector('.metric-card.dhw').style.display = 'none';
+    }
+    if (!SHOW_PUMP) document.getElementById('pump-section').style.display = 'none';
+
+    const raw = document.getElementById('initial-data-json');
+    if (raw) {
+        try { 
+            const d = JSON.parse(raw.textContent);
+            Object.assign(state, d); 
+            renderAll(); 
+        } catch(e) {}
+    }
+})();
+
+function handleMessage(payload) {
+    try {
+        const d = typeof payload === 'string' ? JSON.parse(payload) : payload;
+        Object.assign(state, d);
+        renderAll();
+    } catch(e) {}
+}
+
+function renderAll() {
+    // Check if null values exist (means not configured or not found)
+    const isUnconfigured = (state.curflowtemp === null && state.outdoortemp === null && state.seltemp === null);
+    document.getElementById('setup-overlay').style.display = isUnconfigured ? 'flex' : 'none';
+
+    setVal('val-setpoint', state.seltemp, 1);
+    setVal('val-flow', state.curflowtemp, 1);
+    setVal('val-return', state.rettemp, 1);
+    setVal('val-outdoor', state.outdoortemp, 1);
+    // EMSESP usually has wwcurtemp or dhwtemp. If not mapped, we leave it blank.
+    
+    // Flame & Dial Active
+    const dial = document.getElementById('thermo-dial');
+    dial.classList.toggle('active', !!state.heatingactive);
+
+    // Pump
+    const pumpMod = state.heatingpumpmod || 0;
+    document.getElementById('pump-fill').style.width = pumpMod + '%';
+    document.getElementById('pump-val').textContent = pumpMod + '%';
+
+    // Badge
+    const badge = document.getElementById('status-badge');
+    badge.className = 'status-badge';
+    if (state.heatingactive) {
+        badge.classList.add('heating');
+        badge.textContent = 'Heizt';
+    } else if (state.tapwateractive || state.wwcharge) {
+        badge.style.background = 'rgba(52,152,219,0.2)';
+        badge.style.color = 'var(--water-blue)';
+        badge.textContent = 'Warmwasser';
+    } else {
+        const modes = {0: 'Auto', 1: 'Tag', 2: 'Nacht', 3: 'Aus'};
+        badge.textContent = modes[state.mode] || 'Standby';
+    }
+
+    // Mode Buttons
+    document.querySelectorAll('.mode-btn').forEach(b => {
+        b.classList.toggle('active', parseInt(b.getAttribute('data-mode')) === state.mode);
+    });
+}
+
+function setVal(id, val, dec) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = (val !== null && val !== undefined) ? parseFloat(val).toFixed(dec) : '--';
+}
+
+function setMode(m) {
+    state.mode = m;
+    renderAll();
+    requestAction('SetMode', m);
+}
+
+function adjustTemp(delta) {
+    if (state.seltemp === null || state.seltemp === undefined) return;
+    
+    // Quick local update for immediate feedback
+    state.seltemp = parseFloat(state.seltemp) + delta;
+    renderAll();
+    
+    // Send to PHP backend
+    requestAction('SetSelTemp', state.seltemp);
+}
+
+function triggerDHWBoost() {
+    requestAction('DHWBoost', 1);
+}
+</script>
+
+<script id="initial-data-json" type="application/json">__INITIAL_DATA__</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+    "id": "{A3F7E2D1-8C4B-4E9A-B6F1-5D2C8E0A7B3C}",
+    "name": "Buderus Heating Tile",
+    "type": 3,
+    "vendor": "Florian Gra\u00dfinger",
+    "aliases": ["Buderus Tile", "Heizung Kachel"],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "BUDERUSTILE",
+    "author": "Florian Gra\u00dfinger",
+    "url": "https://github.com/pinkerunicorn/SymconSmartTiles/tree/main/BuderusHeatingTile"
+}
