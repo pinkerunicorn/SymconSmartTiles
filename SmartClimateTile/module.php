@@ -12,7 +12,7 @@ require_once __DIR__ . '/../libs/Trait_SmartLog.php';
  *
  * @author Florian Grassinger
  */
-class SmartClimateTile extends IPSModuleStrict
+class KlimaKachel extends IPSModuleStrict
 {
     use SmartLog_Trait;
 

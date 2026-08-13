@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-class EnergyDistributionTile extends IPSModuleStrict
+class EnergieverteilungKachel extends IPSModuleStrict
 {
     public function Create(): void
     {
