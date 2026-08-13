@@ -62,9 +62,9 @@ class SmartApplianceTile extends IPSModuleStrict
         }
         
         $html = file_get_contents($htmlPath);
-        $initialData = json_encode($this->CollectCurrentData(), JSON_UNESCAPED_UNICODE);
-        $b64 = base64_encode($initialData);
-        $html = str_replace('__INITIAL_DATA__', $b64, $html);
+        // JSON_HEX_QUOT and JSON_HEX_APOS ensure safe injection into script tags
+        $initialData = json_encode($this->CollectCurrentData(), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        $html = str_replace("'__INITIAL_DATA__'", $initialData, $html);
         return $html;
     }
 
