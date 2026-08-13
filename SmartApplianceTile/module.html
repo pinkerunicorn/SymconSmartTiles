@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --bg-card: rgba(30, 30, 35, 0.85);
+            --bg-card-active: rgba(45, 45, 55, 0.95);
+            --text-main: #FFFFFF;
+            --text-muted: #A0A0A0;
+            --accent: #3B82F6; /* Symcon Blue */
+            --accent-glow: rgba(59, 130, 246, 0.4);
+            --progress-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-main);
+            background: transparent;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            max-width: 1200px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card {
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card.active {
+            background: var(--bg-card-active);
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 25px var(--accent-glow);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .header svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-main);
+            transition: fill 0.3s ease;
+        }
+        
+        .card.active .header svg {
+            fill: var(--accent);
+        }
+
+        .title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Circular Progress */
+        .progress-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+        }
+
+        .progress-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .progress-bg {
+            fill: none;
+            stroke: var(--progress-bg);
+            stroke-width: 8;
+        }
+
+        .progress-bar {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease-in-out;
+        }
+
+        .card:not(.active) .progress-bar {
+            stroke: #555;
+        }
+
+        .time-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .time-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+        
+        .time-value.done {
+            font-size: 1.2rem;
+            color: #10B981; /* Green */
+        }
+
+        .time-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .footer {
+            width: 100%;
+            text-align: center;
+        }
+
+        .status {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .phase {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-height: 1rem;
+        }
+        
+        /* Icons */
+        .icon-washer, .icon-dryer, .icon-dishwasher { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- SVG Sprites -->
+    <svg style="display: none;">
+        <!-- Washer Icon -->
+        <symbol id="icon-Washer" viewBox="0 0 24 24">
+            <path d="M19 2H5C3.34315 2 2 3.34315 2 5V19C2 20.6569 3.34315 22 5 22H19C20.6569 22 22 20.6569 22 19V5C22 3.34315 20.6569 2 19 2ZM20 19C20 19.5523 19.5523 20 19 20H5C4.44772 20 4 19.5523 4 19V5C4 4.44772 4.44772 4 5 4H19C19.5523 4 20 4.44772 20 5V19Z"/>
+            <path d="M7 6H10V8H7V6Z"/>
+            <path d="M12 10C9.23858 10 7 12.2386 7 15C7 17.7614 9.23858 20 12 20C14.7614 20 17 17.7614 17 15C17 12.2386 14.7614 10 12 10ZM12 18C10.3431 18 9 16.6569 9 15C9 13.3431 10.3431 12 12 12C13.6569 12 15 13.3431 15 15C15 16.6569 13.6569 18 12 18Z"/>
+            <circle cx="12" cy="15" r="1.5"/>
+        </symbol>
+        <!-- Dryer Icon -->
+        <symbol id="icon-Dryer" viewBox="0 0 24 24">
+            <path d="M19 2H5C3.34315 2 2 3.34315 2 5V19C2 20.6569 3.34315 22 5 22H19C20.6569 22 22 20.6569 22 19V5C22 3.34315 20.6569 2 19 2ZM20 19C20 19.5523 19.5523 20 19 20H5C4.44772 20 4 19.5523 4 19V5C4 4.44772 4.44772 4 5 4H19C19.5523 4 20 4.44772 20 5V19Z"/>
+            <circle cx="8" cy="7" r="1"/>
+            <circle cx="11" cy="7" r="1"/>
+            <path d="M12 10C9.23858 10 7 12.2386 7 15C7 17.7614 9.23858 20 12 20C14.7614 20 17 17.7614 17 15C17 12.2386 14.7614 10 12 10ZM12 18C10.3431 18 9 16.6569 9 15C9 13.3431 10.3431 12 12 12C13.6569 12 15 13.3431 15 15C15 16.6569 13.6569 18 12 18Z"/>
+            <path d="M11 13.5C11 13.5 11 14.5 12 14.5C13 14.5 13 15.5 13 15.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+            <path d="M10 14.5C10 14.5 10 15.5 11 15.5C12 15.5 12 16.5 12 16.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </symbol>
+        <!-- Dishwasher Icon -->
+        <symbol id="icon-Dishwasher" viewBox="0 0 24 24">
+            <path d="M19 2H5C3.34315 2 2 3.34315 2 5V19C2 20.6569 3.34315 22 5 22H19C20.6569 22 22 20.6569 22 19V5C22 3.34315 20.6569 2 19 2ZM20 19C20 19.5523 19.5523 20 19 20H5C4.44772 20 4 19.5523 4 19V5C4 4.44772 4.44772 4 5 4H19C19.5523 4 20 4.44772 20 5V19Z"/>
+            <path d="M4 8H20V10H4V8Z"/>
+            <circle cx="16" cy="6" r="1"/>
+            <circle cx="18" cy="6" r="1"/>
+            <path d="M7 13V17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M12 13V17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M17 13V17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M6 18H18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </symbol>
+    </svg>
+
+    <div class="container" id="app"></div>
+
+    <script>
+        const initialData = '__INITIAL_DATA__';
+        const C = 2 * Math.PI * 50; // Circumference for r=50
+
+        function render(dataStr) {
+            try {
+                const data = JSON.parse(dataStr);
+                const container = document.getElementById('app');
+                container.innerHTML = '';
+                
+                if (!data.appliances || data.appliances.length === 0) {
+                    container.innerHTML = '<div style="color: #A0A0A0; padding: 20px;">Keine Geräte konfiguriert.</div>';
+                    return;
+                }
+
+                data.appliances.forEach(app => {
+                    const isActive = app.progress > 0 && app.progress < 100 && app.status !== 'Aus' && app.status !== '';
+                    const isDone = app.progress === 100 || app.status === 'Fertig' || app.status === 'Ende';
+                    
+                    let activeClass = isActive ? 'active' : '';
+                    let progressValue = app.progress || 0;
+                    
+                    if (isDone) {
+                        progressValue = 100;
+                        activeClass = '';
+                    }
+
+                    const offset = C - (progressValue / 100) * C;
+                    
+                    let timeDisplay = '';
+                    if (isDone) {
+                        timeDisplay = '<div class="time-value done">Fertig</div>';
+                    } else if (isActive) {
+                        if (app.remaining_fmt && app.remaining_fmt !== '') {
+                            const val = app.remaining_fmt.replace(/[^0-9]/g, '');
+                            timeDisplay = `<div class="time-value">${val}</div><div class="time-label">Min</div>`;
+                        } else if (app.remaining_raw > 0) {
+                            timeDisplay = `<div class="time-value">${app.remaining_raw}</div><div class="time-label">Min</div>`;
+                        } else {
+                            timeDisplay = `<div class="time-value">${progressValue}</div><div class="time-label">%</div>`;
+                        }
+                    } else {
+                        timeDisplay = '<div class="time-value" style="color: var(--text-muted);">--</div>';
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = `card ${activeClass}`;
+                    card.innerHTML = `
+                        <div class="header">
+                            <svg><use href="#icon-${app.icon}"></use></svg>
+                            <h3 class="title">${app.name}</h3>
+                        </div>
+                        <div class="progress-container">
+                            <svg class="progress-svg" viewBox="0 0 120 120">
+                                <circle class="progress-bg" cx="60" cy="60" r="50"></circle>
+                                <circle class="progress-bar" cx="60" cy="60" r="50" 
+                                        stroke-dasharray="${C}" stroke-dashoffset="${offset}"></circle>
+                            </svg>
+                            <div class="time-display">
+                                ${timeDisplay}
+                            </div>
+                        </div>
+                        <div class="footer">
+                            <div class="status">${app.status || 'Aus'}</div>
+                            <div class="phase">${app.phase || ''}</div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (e) {
+                console.error("Fehler beim Parsen der Daten", e);
+            }
+        }
+
+        if (initialData !== '__INITIAL_DATA__') {
+            render(initialData);
+        }
+
+        // Symcon Message Handler
+        window.addEventListener('message', function(event) {
+            if (typeof event.data === 'string') {
+                render(event.data);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+    "id": "{F1A2B3C4-D5E6-7F8A-9B0C-1D2E3F4A5B6C}",
+    "name": "SmartApplianceTile",
+    "type": 3,
+    "vendor": "Florian Graßinger",
+    "aliases": [
+        "Hausgeräte Kachel"
+    ],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "SAT",
+    "author": "Florian Graßinger",
+    "url": "https://github.com/pinkerunicorn/SymconSmartTiles/tree/main/SmartApplianceTile"
+}
