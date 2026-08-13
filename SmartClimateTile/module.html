@@ -94,8 +94,8 @@
             transform: scale(0.95);
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
-        .btn-minus { color: #3498db; }
-        .btn-plus { color: var(--accent); }
+        .btn-minus { color: var(--content-color); }
+        .btn-plus { color: var(--content-color); }
 
         .cc-gauge-info {
             position: absolute;
@@ -208,7 +208,7 @@
                             <stop id="gs0" offset="0%" stop-color="#3498db"/>
                             <stop id="gs100" offset="100%" stop-color="#ff4785"/>
                         </linearGradient>
-                        <filter id="glow">
+                        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
                             <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
                             <feMerge>
                                 <feMergeNode in="coloredBlur"/>
