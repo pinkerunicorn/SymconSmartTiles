@@ -1,14 +1,16 @@
 {
     "elements": [
         {
-            "type": "SelectInstance",
+            "type": "Select",
             "name": "DeviceRegistryID",
-            "caption": "Symcon Device Registry (Sensoren)"
+            "caption": "Symcon Device Registry (Sensoren)",
+            "options": []
         },
         {
-            "type": "SelectInstance",
+            "type": "Select",
             "name": "SmartControllerID",
-            "caption": "Smart Controller (Haus Zustand)"
+            "caption": "Smart Controller (Haus Zustand)",
+            "options": []
         }
     ],
     "actions": [],

@@ -167,4 +167,37 @@ class SecurityKachel extends IPSModuleStrict
             }
         }
     }
+
+    public function GetConfigurationForm(): string
+    {
+        $jsonForm = file_get_contents(__DIR__ . '/form.json');
+        $form = json_decode($jsonForm, true);
+
+        // Populate DeviceRegistry options
+        $drInstances = IPS_GetInstanceListByModuleID('{F3B4A7D9-C59E-401A-B826-17D3B5C2849E}');
+        $drOptions = [['caption' => '(Bitte auswählen)', 'value' => 0]];
+        foreach ($drInstances as $id) {
+            $drOptions[] = ['caption' => IPS_GetName($id), 'value' => $id];
+        }
+        
+        // Populate SmartController options
+        $shcInstances = IPS_GetInstanceListByModuleID('{460D7C60-0766-4534-BFD8-5920737B1845}');
+        $shcOptions = [['caption' => '(Bitte auswählen)', 'value' => 0]];
+        foreach ($shcInstances as $id) {
+            $shcOptions[] = ['caption' => IPS_GetName($id), 'value' => $id];
+        }
+
+        if (isset($form['elements']) && is_array($form['elements'])) {
+            foreach ($form['elements'] as &$element) {
+                if ($element['name'] === 'DeviceRegistryID') {
+                    $element['options'] = $drOptions;
+                }
+                if ($element['name'] === 'SmartControllerID') {
+                    $element['options'] = $shcOptions;
+                }
+            }
+        }
+
+        return json_encode($form);
+    }
 }
