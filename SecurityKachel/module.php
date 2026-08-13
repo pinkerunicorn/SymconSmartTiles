@@ -147,12 +147,22 @@ class SecurityKachel extends IPSModuleStrict
             }
         }
 
-        $this->UpdateFormField('SecurityData', 'value', json_encode($payload));
+        $this->UpdateVisualizationValue(json_encode($payload));
         $this->DA_SetAvailable(true);
+    }
+
+    public function GetVisualizationTile(): string
+    {
+        return file_get_contents(__DIR__ . '/module.html');
     }
 
     public function RequestAction(string $Ident, $Value): void
     {
+        if ($Ident === 'Init') {
+            $this->UpdateData();
+            return;
+        }
+
         if ($Ident === 'SetPresenceMode') {
             $shcId = $this->ReadPropertyInteger('SmartControllerID');
             if ($shcId > 0 && IPS_InstanceExists($shcId)) {
