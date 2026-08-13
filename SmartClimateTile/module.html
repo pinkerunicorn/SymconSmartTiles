@@ -6,8 +6,13 @@
     <style>
         :root {
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --content-color: #cdd6f4;
             --text-main: var(--content-color, #ffffff);
             --transition-speed: 0.3s;
+            --accent: #ff4785; /* Hot Pink */
+            
+            --glass-bg: rgba(255,255,255,0.03);
+            --glass-border: rgba(255,255,255,0.06);
         }
 
         body, html {
@@ -74,9 +79,10 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            border: 1px solid color-mix(in srgb, var(--content-color) 20%, transparent);
-            background: transparent;
-            transition: background 0.15s, transform 0.1s;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
             touch-action: manipulation;
             flex-shrink: 0;
             font-size: clamp(24px, 10cqw, 32px);
@@ -84,11 +90,12 @@
         }
         
         .temp-button:active {
-            background: color-mix(in srgb, var(--content-color) 10%, transparent);
+            background: rgba(255,255,255,0.1);
             transform: scale(0.95);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
-        .btn-minus { color: var(--color-cold, #3B82F6); border-color: color-mix(in srgb, var(--color-cold, #3B82F6) 50%, transparent); }
-        .btn-plus { color: var(--color-warm, #EF4444); border-color: color-mix(in srgb, var(--color-warm, #EF4444) 50%, transparent); }
+        .btn-minus { color: #3498db; }
+        .btn-plus { color: var(--accent); }
 
         .cc-gauge-info {
             position: absolute;
@@ -124,13 +131,15 @@
 
         .cc-gauge-pill {
             font-size: clamp(11px, 4cqw, 15px);
-            color: color-mix(in srgb, var(--content-color) 80%, transparent);
-            background: color-mix(in srgb, var(--content-color) 9%, transparent);
-            padding: clamp(1px, 0.8cqw, 3px) clamp(6px, 2.2cqw, 10px);
-            border-radius: 999px;
+            color: var(--content-color);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: clamp(2px, 1cqw, 4px) clamp(8px, 2.5cqw, 12px);
+            border-radius: 8px;
             display: flex;
             align-items: center;
-            gap: clamp(3px, 1cqw, 6px);
+            gap: clamp(4px, 1.5cqw, 8px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         .cc-gauge-pill svg {
@@ -166,17 +175,22 @@
             align-items: center;
             gap: clamp(4px, 1vh, 8px);
             cursor: pointer;
-            padding: clamp(4px, 1vw, 8px);
-            border-radius: clamp(6px, 2vw, 14px);
-            background: transparent;
-            border: none;
-            color: color-mix(in srgb, var(--content-color) 40%, transparent);
+            padding: clamp(4px, 1vw, 8px) clamp(8px, 2vw, 16px);
+            border-radius: clamp(8px, 2vw, 16px);
+            background: var(--glass-bg);
+            border: 1px solid transparent;
+            color: color-mix(in srgb, var(--content-color) 60%, transparent);
             transition: all var(--transition-speed);
             touch-action: manipulation;
         }
-        .mode-btn:hover { background: color-mix(in srgb, var(--content-color) 8%, transparent); }
-        .mode-btn.active { color: var(--mode-color, var(--text-main)); }
-        .mode-btn svg { width: clamp(24px, 7vw, 36px); height: clamp(24px, 7vw, 36px); fill: currentColor; }
+        .mode-btn:hover { background: rgba(255,255,255,0.05); }
+        .mode-btn.active { 
+            color: var(--accent); 
+            background: rgba(255, 71, 133, 0.05);
+            border-color: rgba(255, 71, 133, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 71, 133, 0.15);
+        }
+        .mode-btn svg { width: clamp(20px, 6vw, 32px); height: clamp(20px, 6vw, 32px); fill: currentColor; }
         .mode-btn span { font-size: clamp(9px, 3vw, 12px); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
         .hidden { display: none !important; }
     </style>
@@ -191,12 +205,19 @@
                 <svg id="gauge-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="arcGrad" x1="0" y1="0" x2="1" y2="0">
-                            <stop id="gs0" offset="0%" stop-color="#3B82F6"/>
-                            <stop id="gs100" offset="100%" stop-color="#EF4444"/>
+                            <stop id="gs0" offset="0%" stop-color="#3498db"/>
+                            <stop id="gs100" offset="100%" stop-color="#ff4785"/>
                         </linearGradient>
+                        <filter id="glow">
+                            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
                     </defs>
-                    <path id="arc-bg" fill="none" stroke-width="6" stroke-linecap="round" class="cc-gauge-track" />
-                    <path id="arc-fill" fill="none" stroke="url(#arcGrad)" stroke-width="6" stroke-linecap="round" />
+                    <path id="arc-bg" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="8" stroke-linecap="round" />
+                    <path id="arc-fill" fill="none" stroke="url(#arcGrad)" stroke-width="8" stroke-linecap="round" filter="url(#glow)" />
                     
                     <g id="dot-group" style="display:none; cursor: pointer;">
                         <circle id="dot-glow" cx="0" cy="0" r="17" fill="#fff" opacity="0.12" />

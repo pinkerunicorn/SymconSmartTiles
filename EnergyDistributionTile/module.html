@@ -7,12 +7,14 @@
     <style>
         :root {
             --bg-color: transparent;
-            --house-color: #ff4785;
+            --house-color: #ff4785; /* Pink signature */
             --consumer-color: #ff4785;
-            --producer-color: #ffaa00;
-            --line-color: rgba(255, 255, 255, 0.2);
-            --text-color: #e0e0e0;
-            --text-muted: #888899;
+            --producer-color: #00b894; /* Eco Green for solar/wind */
+            --line-color: rgba(255, 255, 255, 0.05);
+            --text-color: #cdd6f4;
+            --text-muted: rgba(205, 214, 244, 0.6);
+            --glass-bg: rgba(255,255,255,0.03);
+            --glass-border: rgba(255,255,255,0.08);
         }
 
         html, body {
@@ -48,20 +50,35 @@
             overflow: visible;
         }
 
-        .node-bg { fill: #2a2a35; stroke-width: 3px; }
-        .node-icon { fill: none; stroke: #fff; stroke-width: 2px; stroke-linecap: round; stroke-linejoin: round; }
-        .central-node .node-bg { fill: var(--house-color); stroke: none; }
-        .central-node .node-icon { stroke: #fff; stroke-width: 2.5px; }
-        .consumer-node .node-bg { stroke: var(--consumer-color); }
-        .producer-node .node-bg { stroke: var(--producer-color); }
+        .node-bg { fill: rgba(0,0,0,0.4); stroke: var(--glass-border); stroke-width: 2px; }
+        .node-icon { fill: none; stroke: var(--text-color); stroke-width: 2px; stroke-linecap: round; stroke-linejoin: round; }
+        
+        .central-node .node-bg { 
+            fill: rgba(255, 71, 133, 0.15); 
+            stroke: var(--house-color); 
+            stroke-width: 2px;
+            filter: drop-shadow(0 0 15px rgba(255, 71, 133, 0.4));
+        }
+        .central-node .node-icon { stroke: var(--house-color); stroke-width: 2.5px; }
+        
+        .consumer-node .node-bg { stroke: var(--consumer-color); fill: rgba(255, 71, 133, 0.05); }
+        .producer-node .node-bg { stroke: var(--producer-color); fill: rgba(0, 184, 148, 0.05); }
+        
         .connection-line { fill: none; stroke: var(--line-color); stroke-width: 4px; }
 
         .energy-flow {
-            fill: none; stroke-width: 4px; stroke-linecap: round; stroke-dasharray: 8 20;
+            fill: none; stroke-width: 3px; stroke-linecap: round; stroke-dasharray: 6 24;
             animation: flow linear infinite;
         }
-        .consumer-flow { stroke: var(--consumer-color); }
-        .producer-flow { stroke: var(--producer-color); animation-direction: reverse; }
+        .consumer-flow { 
+            stroke: var(--consumer-color); 
+            filter: drop-shadow(0 0 6px var(--consumer-color));
+        }
+        .producer-flow { 
+            stroke: var(--producer-color); 
+            animation-direction: reverse; 
+            filter: drop-shadow(0 0 6px var(--producer-color));
+        }
 
         @keyframes flow {
             from { stroke-dashoffset: 28; }

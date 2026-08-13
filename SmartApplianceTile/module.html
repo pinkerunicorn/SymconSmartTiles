@@ -5,20 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
-            --bg-card: rgba(30, 30, 35, 0.85);
-            --bg-card-active: rgba(45, 45, 55, 0.95);
-            --text-main: #FFFFFF;
-            --text-muted: #A0A0A0;
-            --accent: #3B82F6; /* Symcon Blue */
-            --accent-glow: rgba(59, 130, 246, 0.4);
-            --progress-bg: rgba(255, 255, 255, 0.1);
+            --card-color: #1e1e2e;
+            --content-color: #cdd6f4;
+            --bg-color: #181825;
+            
+            --accent: #ff4785; /* Hot Pink */
+            --accent-glow: rgba(255, 71, 133, 0.4);
+            
+            --glass-bg: rgba(255,255,255,0.03);
+            --glass-border: rgba(255,255,255,0.06);
+            --text-muted: rgba(205, 214, 244, 0.6);
+            --progress-bg: rgba(255, 255, 255, 0.05);
         }
 
         body {
             margin: 0;
             padding: 40px 10px 10px 10px; /* Space for Symcon Widget Title */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: var(--text-main);
+            color: var(--content-color);
             background: transparent;
             overflow: hidden;
             display: flex;
@@ -41,22 +45,22 @@
             flex: 1;
             min-width: 200px;
             max-width: 300px;
-            background: var(--bg-card);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
             border-radius: 16px;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .card.active {
-            background: var(--bg-card-active);
-            border-color: rgba(59, 130, 246, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 71, 133, 0.3);
             box-shadow: 0 4px 25px var(--accent-glow);
         }
 
@@ -71,7 +75,7 @@
         .header svg {
             width: 24px;
             height: 24px;
-            fill: var(--text-main);
+            fill: var(--content-color);
             transition: fill 0.3s ease;
         }
         
@@ -94,6 +98,14 @@
             width: 120px;
             height: 120px;
             margin-bottom: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
+            box-shadow: 
+                inset 0 0 15px rgba(0,0,0,0.5),
+                0 10px 20px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .progress-svg {
@@ -137,7 +149,7 @@
         
         .time-value.done {
             font-size: 1.2rem;
-            color: #10B981; /* Green */
+            color: var(--accent); /* Hot Pink */
         }
 
         .time-label {
