@@ -1,16 +1,14 @@
 {
     "elements": [
         {
-            "type": "Label",
-            "caption": "Security Kachel - Zero Config"
+            "type": "SelectInstance",
+            "name": "DeviceRegistryID",
+            "caption": "Symcon Device Registry (Sensoren)"
         },
         {
-            "type": "Label",
-            "caption": "Sensoren werden automatisch aus der DeviceRegistry (DevicesContactSensor, DevicesMotionSensor) bezogen."
-        },
-        {
-            "type": "Label",
-            "caption": "Der Hauszustand wird automatisch vom SmartController bezogen."
+            "type": "SelectInstance",
+            "name": "SmartControllerID",
+            "caption": "Smart Controller (Haus Zustand)"
         }
     ],
     "actions": [],

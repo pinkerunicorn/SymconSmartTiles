@@ -13,6 +13,8 @@ class SecurityKachel extends IPSModuleStrict
         parent::Create();
         $this->SetVisualizationType(1); // Enable HTML-SDK Kachel-Visualisierung
         $this->RegisterPropertyInteger('TileType', 1); // Not used directly, just for compatibility
+        $this->RegisterPropertyInteger('DeviceRegistryID', 0);
+        $this->RegisterPropertyInteger('SmartControllerID', 0);
         $this->DA_RegisterAvailability(900);
     }
 
@@ -56,9 +58,8 @@ class SecurityKachel extends IPSModuleStrict
     private function RegisterMessageForSources(): void
     {
         // 1. SmartController Variablen registrieren
-        $shcInstances = IPS_GetInstanceListByModuleID('{460D7C60-0766-4534-BFD8-5920737B1845}');
-        if (count($shcInstances) > 0) {
-            $shcId = $shcInstances[0];
+        $shcId = $this->ReadPropertyInteger('SmartControllerID');
+        if ($shcId > 0 && IPS_InstanceExists($shcId)) {
             $presenceId = @IPS_GetObjectIDByIdent('PresenceMode', $shcId);
             if ($presenceId) $this->RegisterMessage($presenceId, VM_UPDATE);
             
@@ -67,16 +68,14 @@ class SecurityKachel extends IPSModuleStrict
         }
 
         // 2. DeviceRegistry Sensoren registrieren
-        $drInstances = IPS_GetInstanceListByModuleID('{F3B4A7D9-C59E-401A-B826-17D3B5C2849E}');
-        if (count($drInstances) > 0) {
-            $drId = $drInstances[0];
+        $drId = $this->ReadPropertyInteger('DeviceRegistryID');
+        if ($drId > 0 && IPS_InstanceExists($drId)) {
             if (function_exists('SDR_GetDevicesByType')) {
                 $contacts = SDR_GetDevicesByType($drId, 'DevicesContactSensor');
                 $motions = SDR_GetDevicesByType($drId, 'DevicesMotionSensor');
                 
                 $allDevices = array_merge($contacts, $motions);
                 foreach ($allDevices as $device) {
-                    // Try different variable fields
                     $varId = 0;
                     if (!empty($device['OpenClose_VarID'])) $varId = (int)$device['OpenClose_VarID'];
                     else if (!empty($device['Status_VarID'])) $varId = (int)$device['Status_VarID'];
@@ -93,16 +92,15 @@ class SecurityKachel extends IPSModuleStrict
     private function UpdateData(): void
     {
         $payload = [
-            'presenceMode' => 0, // 0=Zuhause, 1=Kurz weg, 2=Urlaub
-            'alarmLevel' => 0,   // 0=OK, 1=Warnung, 2=Alarm
+            'presenceMode' => 0, 
+            'alarmLevel' => 0,   
             'openWindows' => [],
             'activeMotions' => []
         ];
 
         // 1. Fetch from SmartController
-        $shcInstances = IPS_GetInstanceListByModuleID('{460D7C60-0766-4534-BFD8-5920737B1845}');
-        $shcId = count($shcInstances) > 0 ? $shcInstances[0] : 0;
-        if ($shcId > 0) {
+        $shcId = $this->ReadPropertyInteger('SmartControllerID');
+        if ($shcId > 0 && IPS_InstanceExists($shcId)) {
             if (function_exists('SHC_GetPresenceMode')) {
                 $payload['presenceMode'] = SHC_GetPresenceMode($shcId);
             } else {
@@ -119,10 +117,8 @@ class SecurityKachel extends IPSModuleStrict
         }
 
         // 2. Fetch from DeviceRegistry
-        $drInstances = IPS_GetInstanceListByModuleID('{F3B4A7D9-C59E-401A-B826-17D3B5C2849E}');
-        $drId = count($drInstances) > 0 ? $drInstances[0] : 0;
-        
-        if ($drId > 0 && function_exists('SDR_GetDevicesByType')) {
+        $drId = $this->ReadPropertyInteger('DeviceRegistryID');
+        if ($drId > 0 && IPS_InstanceExists($drId) && function_exists('SDR_GetDevicesByType')) {
             $contacts = SDR_GetDevicesByType($drId, 'DevicesContactSensor');
             foreach ($contacts as $contact) {
                 $varId = 0;
@@ -131,10 +127,7 @@ class SecurityKachel extends IPSModuleStrict
                 else if (!empty($contact['OnOff_VarID'])) $varId = (int)$contact['OnOff_VarID'];
                 
                 if ($varId > 0 && IPS_VariableExists($varId)) {
-                    $val = GetValue($varId);
-                    // Wir nehmen an, dass true = Offen bedeutet. Falls es false ist, müssen wir es vielleicht invertieren, 
-                    // aber Standard ist true = Alarm/Offen.
-                    if ($val) {
+                    if (GetValue($varId)) {
                         $payload['openWindows'][] = $contact['name'] ?? 'Unbekanntes Fenster';
                     }
                 }
@@ -161,9 +154,8 @@ class SecurityKachel extends IPSModuleStrict
     public function RequestAction(string $Ident, $Value): void
     {
         if ($Ident === 'SetPresenceMode') {
-            $shcInstances = IPS_GetInstanceListByModuleID('{460D7C60-0766-4534-BFD8-5920737B1845}');
-            if (count($shcInstances) > 0) {
-                $shcId = $shcInstances[0];
+            $shcId = $this->ReadPropertyInteger('SmartControllerID');
+            if ($shcId > 0 && IPS_InstanceExists($shcId)) {
                 if (function_exists('SHC_SetPresenceMode')) {
                     SHC_SetPresenceMode($shcId, (int)$Value);
                 } else {
