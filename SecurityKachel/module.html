@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   SECURITY KACHEL – IP-Symcon HTML-SDK (PREMIUM DESIGN)
+   ═══════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --card-color: #1e1e2e;
+    --content-color: #cdd6f4;
+    --accent-color: #ff4785; /* Hot Pink */
+    --bg-color: #181825;
+    
+    --safe-green: #00b894;
+    --warn-yellow: #f1c40f;
+    --alarm-red: #ff4785;
+    
+    --glass-bg: rgba(255,255,255,0.03);
+    --glass-border: rgba(255,255,255,0.06);
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    color: var(--content-color);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+}
+
+.tile-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 10px;
+    padding-top: 15px;
+    overflow-y: auto;
+}
+
+.tile-content {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ── HEADER ── */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.header-title svg {
+    width: 20px;
+    height: 20px;
+    color: var(--content-color);
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    transition: all 0.5s ease;
+}
+
+.status-badge.safe {
+    background: rgba(0, 184, 148, 0.15);
+    color: var(--safe-green);
+    border-color: rgba(0, 184, 148, 0.3);
+}
+
+.status-badge.warn {
+    background: rgba(241, 196, 15, 0.15);
+    color: var(--warn-yellow);
+    border-color: rgba(241, 196, 15, 0.3);
+    box-shadow: 0 0 10px rgba(241, 196, 15, 0.2);
+}
+
+.status-badge.alarm {
+    background: rgba(255, 71, 133, 0.15);
+    color: var(--alarm-red);
+    border-color: rgba(255, 71, 133, 0.3);
+    box-shadow: 0 0 10px rgba(255, 71, 133, 0.3);
+}
+
+/* ── HAUPTBEREICH (Schild) ── */
+.main-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.shield-container {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
+    box-shadow: 
+        inset 0 0 15px rgba(0,0,0,0.5),
+        0 10px 20px rgba(0,0,0,0.3),
+        0 0 0 1px rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.5s ease;
+}
+
+.shield-container svg {
+    width: 60px;
+    height: 60px;
+    color: var(--content-color);
+    opacity: 0.5;
+    transition: all 0.5s ease;
+}
+
+.shield-container.safe {
+    box-shadow: 
+        inset 0 0 20px rgba(0,184,148,0.1),
+        0 10px 20px rgba(0,0,0,0.3),
+        0 0 0 1px rgba(0,184,148,0.2);
+}
+.shield-container.safe svg {
+    color: var(--safe-green);
+    opacity: 0.8;
+}
+
+.shield-container.warn {
+    box-shadow: 
+        inset 0 0 20px rgba(241,196,15,0.2),
+        0 0 30px rgba(241,196,15,0.2),
+        0 0 0 1px rgba(241,196,15,0.4);
+}
+.shield-container.warn svg {
+    color: var(--warn-yellow);
+    opacity: 1;
+    filter: drop-shadow(0 0 5px var(--warn-yellow));
+}
+
+.shield-container.alarm {
+    box-shadow: 
+        inset 0 0 20px rgba(255,71,133,0.3),
+        0 0 30px rgba(255,71,133,0.4),
+        0 0 0 1px rgba(255,71,133,0.5);
+    animation: pulse-alarm 1s infinite alternate;
+}
+.shield-container.alarm svg {
+    color: var(--alarm-red);
+    opacity: 1;
+    filter: drop-shadow(0 0 8px var(--alarm-red));
+}
+
+@keyframes pulse-alarm {
+    0% { transform: scale(1); box-shadow: inset 0 0 20px rgba(255,71,133,0.3), 0 0 20px rgba(255,71,133,0.3); }
+    100% { transform: scale(1.05); box-shadow: inset 0 0 30px rgba(255,71,133,0.5), 0 0 40px rgba(255,71,133,0.6); }
+}
+
+/* ── SENSOR LISTE (Pills) ── */
+.sensor-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
+}
+
+.sensor-pill {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.sensor-pill.warn {
+    border-color: rgba(241, 196, 15, 0.4);
+    background: rgba(241, 196, 15, 0.1);
+    color: var(--warn-yellow);
+}
+.sensor-pill.alarm {
+    border-color: rgba(255, 71, 133, 0.4);
+    background: rgba(255, 71, 133, 0.1);
+    color: var(--alarm-red);
+}
+.sensor-pill.safe {
+    border-color: rgba(0, 184, 148, 0.2);
+    color: var(--safe-green);
+}
+
+/* ── CONTROLS ── */
+.controls-area {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: auto;
+}
+
+.control-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.5;
+    margin-left: 5px;
+}
+
+.mode-switcher {
+    display: flex;
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+    padding: 4px;
+    width: 100%;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 8px 0;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--content-color);
+    opacity: 0.6;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mode-btn:hover {
+    opacity: 0.8;
+    background: rgba(255,255,255,0.05);
+}
+
+.mode-btn.active {
+    opacity: 1;
+    background: var(--glass-bg);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    border: 1px solid var(--glass-border);
+}
+
+</style>
+</head>
+<body>
+
+<div class="tile-wrapper">
+    <div class="tile-content">
+        
+        <div class="header">
+            <div class="header-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                Security
+            </div>
+            <div id="statusBadge" class="status-badge safe">SICHER</div>
+        </div>
+
+        <div class="main-area">
+            <div id="shieldContainer" class="shield-container safe">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <path d="M9 12l2 2 4-4"></path>
+                </svg>
+            </div>
+            
+            <div id="sensorList" class="sensor-list">
+                <!-- Dynamic Content -->
+            </div>
+        </div>
+
+        <div class="controls-area">
+            <div class="control-label">Haus Zustand</div>
+            <div class="mode-switcher">
+                <div class="mode-btn" id="mode0" onclick="setMode(0)">Zuhause</div>
+                <div class="mode-btn" id="mode1" onclick="setMode(1)">Unterwegs</div>
+                <div class="mode-btn" id="mode2" onclick="setMode(2)">Urlaub</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function handleMessage(data) {
+    if (!data) return;
+    try {
+        const parsed = JSON.parse(data);
+        render(parsed);
+    } catch (e) {
+        console.error("JSON Parse Error:", e);
+    }
+}
+
+function render(data) {
+    const statusBadge = document.getElementById('statusBadge');
+    const shieldContainer = document.getElementById('shieldContainer');
+    const sensorList = document.getElementById('sensorList');
+    
+    // Reset Classes
+    statusBadge.className = 'status-badge';
+    shieldContainer.className = 'shield-container';
+    
+    let isAlarm = data.alarmLevel > 0;
+    let openCount = (data.openWindows || []).length;
+    let motionCount = (data.activeMotions || []).length;
+    
+    if (isAlarm) {
+        statusBadge.classList.add('alarm');
+        statusBadge.textContent = 'ALARM!';
+        shieldContainer.classList.add('alarm');
+        shieldContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+    } else if (openCount > 0 || motionCount > 0) {
+        statusBadge.classList.add('warn');
+        statusBadge.textContent = 'WARNUNG';
+        shieldContainer.classList.add('warn');
+        shieldContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+    } else {
+        statusBadge.classList.add('safe');
+        statusBadge.textContent = 'SICHER';
+        shieldContainer.classList.add('safe');
+        shieldContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>';
+    }
+    
+    // Render Sensor Pills
+    sensorList.innerHTML = '';
+    if (openCount === 0 && motionCount === 0) {
+        sensorList.innerHTML = '<div class="sensor-pill safe"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Alles sicher und geschlossen</div>';
+    } else {
+        if (data.openWindows) {
+            data.openWindows.forEach(w => {
+                sensorList.innerHTML += `<div class="sensor-pill warn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"></path><path d="M12 3v18"></path></svg> ${w}</div>`;
+            });
+        }
+        if (data.activeMotions) {
+            data.activeMotions.forEach(m => {
+                sensorList.innerHTML += `<div class="sensor-pill warn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> ${m}</div>`;
+            });
+        }
+    }
+    
+    // Update Mode Switcher
+    for (let i = 0; i <= 2; i++) {
+        let el = document.getElementById('mode' + i);
+        if (el) el.classList.remove('active');
+    }
+    let activeEl = document.getElementById('mode' + data.presenceMode);
+    if (activeEl) activeEl.classList.add('active');
+}
+
+function setMode(mode) {
+    requestAction('SetPresenceMode', mode);
+}
+
+// Initialer Request
+requestAction('Init', 0);
+</script>
+
+</body>
+</html>

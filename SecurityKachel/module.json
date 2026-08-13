@@ -1,0 +1,13 @@
+{
+    "id": "{E5C8D4B1-3A2F-4F90-8C7E-6B1A2C3D4E5F}",
+    "name": "Security Kachel",
+    "type": 3,
+    "vendor": "Florian Graßinger",
+    "aliases": ["Sicherheit Kachel"],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "SECKACHEL",
+    "author": "Florian Graßinger",
+    "url": "https://github.com/pinkerunicorn/SymconSmartTiles/tree/main/SecurityKachel"
+}

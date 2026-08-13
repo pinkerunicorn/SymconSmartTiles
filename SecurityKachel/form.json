@@ -1,0 +1,18 @@
+{
+    "elements": [
+        {
+            "type": "Label",
+            "caption": "Security Kachel - Zero Config"
+        },
+        {
+            "type": "Label",
+            "caption": "Sensoren werden automatisch aus der DeviceRegistry (DevicesContactSensor, DevicesMotionSensor) bezogen."
+        },
+        {
+            "type": "Label",
+            "caption": "Der Hauszustand wird automatisch vom SmartController bezogen."
+        }
+    ],
+    "actions": [],
+    "status": []
+}
