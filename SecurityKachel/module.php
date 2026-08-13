@@ -11,6 +11,7 @@ class SecurityKachel extends IPSModuleStrict
     public function Create(): void
     {
         parent::Create();
+        $this->SetVisualizationType(1); // Enable HTML-SDK Kachel-Visualisierung
         $this->RegisterPropertyInteger('TileType', 1); // Not used directly, just for compatibility
         $this->DA_RegisterAvailability(900);
     }
