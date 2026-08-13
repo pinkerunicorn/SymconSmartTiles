@@ -215,10 +215,19 @@
 
         function render(dataStr) {
             try {
+                // Determine if dataStr is base64 (initial data) or plain JSON string (websocket)
                 let decoded = dataStr;
-                // If it came from __INITIAL_DATA__, it might have HTML entities
-                if (decoded.includes('&quot;')) {
-                    decoded = decoded.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+                if (!decoded.startsWith('{') && !decoded.startsWith('[')) {
+                    // It's base64 from PHP's __INITIAL_DATA__
+                    try {
+                        // Decode base64 and support UTF-8 characters
+                        const binString = atob(decoded);
+                        const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0));
+                        decoded = new TextDecoder().decode(bytes);
+                    } catch (e) {
+                        // If it fails, fallback (e.g. not base64)
+                        console.error("Base64 decode failed", e);
+                    }
                 }
                 const data = JSON.parse(decoded);
                 const container = document.getElementById('app');

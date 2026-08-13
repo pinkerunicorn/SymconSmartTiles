@@ -42,6 +42,9 @@ class SmartApplianceTile extends IPSModuleStrict
         }
 
         $this->SetStatus(102);
+        
+        // Push initial data to WebFront clients
+        $this->PushTileUpdate();
     }
 
     public function MessageSink(int $TimeStamp, int $SenderID, int $Message, array $Data): void
@@ -60,7 +63,8 @@ class SmartApplianceTile extends IPSModuleStrict
         
         $html = file_get_contents($htmlPath);
         $initialData = json_encode($this->CollectCurrentData(), JSON_UNESCAPED_UNICODE);
-        $html = str_replace('__INITIAL_DATA__', htmlspecialchars($initialData, ENT_QUOTES, 'UTF-8'), $html);
+        $b64 = base64_encode($initialData);
+        $html = str_replace('__INITIAL_DATA__', $b64, $html);
         return $html;
     }
 
