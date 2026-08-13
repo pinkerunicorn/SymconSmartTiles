@@ -364,8 +364,8 @@ html, body {
         <div class="main-area">
             
             <!-- Thermostat Dial -->
-            <div class="thermostat-wrapper">
-                <button class="temp-btn" onclick="adjustTemp(-0.5)"><i class="fa-light fa-minus"></i></button>
+            <div class="thermostat-wrapper" style="display: flex; align-items: center; gap: 15px;">
+                <button class="temp-btn" onclick="adjustTemp(-0.5)">&minus;</button>
                 <div class="thermostat-dial" id="thermo-dial">
                     <div class="dial-value"><span id="val-setpoint">--</span><span class="dial-unit">°</span></div>
                     <div class="dial-label">Soll-Temp</div>
@@ -374,7 +374,7 @@ html, body {
                         <path d="M17.66 11.48c-1.4-1.9-2.93-3.23-3.32-6.52-.05-.41-.42-.71-.83-.7-.41.01-.76.32-.8.74-.29 3.01-1.74 4.54-3.1 6.35C8.36 13.01 7.5 14.74 7.5 16.5c0 2.49 2.01 4.5 4.5 4.5s4.5-2.01 4.5-4.5c0-1.76-.86-3.49-2.11-5.12c-.22-.3-.66-.36-.96-.13-.3.23-.36.65-.13.96 1.05 1.36 1.7 2.76 1.7 4.14 0 1.93-1.57 3.5-3.5 3.5s-3.5-1.57-3.5-3.5c0-1.46.68-2.92 1.76-4.32 1.14-1.5 2.29-2.82 2.68-5.34 1.13 2.59 2.72 4.17 3.86 5.71.21.29.62.36.92.15.31-.22.38-.63.16-.92z"/>
                     </svg>
                 </div>
-                <button class="temp-btn" onclick="adjustTemp(0.5)"><i class="fa-light fa-plus"></i></button>
+                <button class="temp-btn" onclick="adjustTemp(0.5)">&plus;</button>
             </div>
 
             <!-- Metrics Grid -->

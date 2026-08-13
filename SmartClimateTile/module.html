@@ -149,7 +149,7 @@
         }
 
         .cc-gauge-temp-target {
-            font-size: clamp(38px, 24cqw, 72px);
+            font-size: clamp(32px, 20cqw, 54px);
             line-height: 1;
             font-weight: 500;
         }
@@ -229,7 +229,11 @@
                 <div class="cc-gauge-info">
                     <div class="cc-gauge-status" id="statusIndicators"></div>
                     
-                    <div class="cc-gauge-pills">
+                    <div class="cc-gauge-temp-target" id="tempSollWrapper">
+                        <span id="tempTarget">--</span><span class="cc-gauge-temp-unit">°C</span>
+                    </div>
+
+                    <div class="cc-gauge-pills" style="margin-top: clamp(6px, 2cqw, 12px);">
                         <div class="cc-gauge-pill hidden" id="valveWrapper">
                             <svg viewBox="0 0 24 24"><path d="M22 13h-4V6c0-1.1-.9-2-2-2h-3V1h-2v3H8c-1.1 0-2 .9-2 2v7H2v2h4v7h12v-7h4v-2zm-6 0H8V6h8v7z"/></svg>
                             <span id="valveVal">--</span>
@@ -242,10 +246,6 @@
                             <svg viewBox="0 0 24 24"><path d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2c0-3.32-2.67-7.25-8-11.8zm0 18c-3.35 0-6-2.57-6-6.2 0-2.34 1.95-5.44 6-9.14 4.05 3.7 6 6.79 6 9.14 0 3.63-2.65 6.2-6 6.2z"/></svg>
                             <span id="humidityVal">--</span>
                         </div>
-                    </div>
-    
-                    <div class="cc-gauge-temp-target" id="tempSollWrapper">
-                        <span id="tempTarget">--</span><span class="cc-gauge-temp-unit">°C</span>
                     </div>
                 </div>
             </div>
@@ -401,12 +401,7 @@
         }
 
         function renderGaugeStatic() {
-            const cCold = intToHex(state.config.colorCold);
-            const cWarm = intToHex(state.config.colorWarm);
-            
-            document.documentElement.style.setProperty('--color-cold', cCold);
-            document.documentElement.style.setProperty('--color-warm', cWarm);
-            
+            // Keep the static Pink-Blue gradient from SVG, do not override with state config
             els.bgPath.setAttribute('d', describeArc(ARC_START, ARC_SPAN));
             els.hitZone.setAttribute('d', describeArc(ARC_START, ARC_SPAN));
             
@@ -417,9 +412,6 @@
             els.arcGrad.setAttribute('y1', startPt.y.toFixed(1));
             els.arcGrad.setAttribute('x2', endPt.x.toFixed(1));
             els.arcGrad.setAttribute('y2', endPt.y.toFixed(1));
-            
-            els.gradStart.setAttribute('stop-color', cCold);
-            els.gradEnd.setAttribute('stop-color', cWarm);
         }
 
         function updateGaugeValue(temp, animate = true) {
@@ -436,7 +428,7 @@
             
             const dotAngle = ARC_START + fillSpan;
             const dotPt = polarToCartesian(dotAngle);
-            const dotColor = lerpColor(intToHex(state.config.colorCold), intToHex(state.config.colorWarm), t);
+            const dotColor = lerpColor("#3498db", "#ff4785", t);
             
             els.dotGroup.style.display = '';
             els.dotGroup.setAttribute('transform', `translate(${dotPt.x.toFixed(2)},${dotPt.y.toFixed(2)})`);
