@@ -57,6 +57,10 @@ body{padding:14px}
 /* ═══ STATUS BAR (TOP) ═══ */
 .status-html{font-size:.95rem;line-height:1.6;color:var(--text-dim)}
 .status-html *{max-width:100%!important}
+/* Override backend progress bar */
+.status-html > div{background:rgba(255,255,255,0.05)!important;border-radius:12px!important;overflow:hidden;border:1px solid rgba(255,255,255,0.08)!important;height:12px!important;margin-top:8px}
+.status-html > div > div{background:linear-gradient(90deg,var(--cyan),var(--pink))!important;box-shadow:0 0 12px var(--cyan-g)!important;border-radius:12px!important;position:relative;overflow:hidden;height:100%!important}
+.status-html > div > div::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);animation:mShimmer 2.5s infinite;transform:translateX(-100%)}
 
 /* ═══ WATERING INDICATOR ═══ */
 .watering-badge{
@@ -93,16 +97,16 @@ body{padding:14px}
 .moist-head{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:5px}
 .moist-head span:first-child{color:var(--text-dim)}
 .moist-head span:last-child{font-weight:600;color:var(--cyan);text-shadow:0 0 6px var(--cyan-g)}
-.moist-track{height:8px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.5)}
-.moist-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.4,0,.2,1);position:relative}
+.moist-track{height:10px;background:rgba(255,255,255,0.04);border-radius:5px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.5)}
+.moist-fill{height:100%;border-radius:5px;transition:width 1.2s cubic-bezier(.4,0,.2,1);position:relative}
 .moist-fill::after{
     content:'';position:absolute;inset:0;
     background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);
     transform:translateX(-100%);animation:mShimmer 3s infinite;
 }
 @keyframes mShimmer{100%{transform:translateX(100%)}}
-.moist-fill.low{background:linear-gradient(90deg,var(--red),var(--orange))}
-.moist-fill.mid{background:linear-gradient(90deg,var(--orange),var(--cyan))}
+.moist-fill.low{background:linear-gradient(90deg,var(--red),var(--orange));box-shadow:0 0 10px rgba(255,51,102,0.4)}
+.moist-fill.mid{background:linear-gradient(90deg,var(--orange),var(--cyan));box-shadow:0 0 10px var(--cyan-g)}
 .moist-fill.high{background:linear-gradient(90deg,var(--cyan),var(--green));box-shadow:0 0 10px var(--green-g)}
 
 /* ═══ STATUS PILL ═══ */
@@ -139,14 +143,14 @@ input[type=range]{
     flex:1;-webkit-appearance:none;background:transparent;
 }
 input[type=range]:focus{outline:none}
-input[type=range]::-webkit-slider-runnable-track{height:4px;background:rgba(255,255,255,0.08);border-radius:2px}
+input[type=range]::-webkit-slider-runnable-track{height:6px;background:linear-gradient(90deg,var(--pink) var(--val,0%),rgba(255,255,255,0.08) var(--val,0%));border-radius:3px}
 input[type=range]::-webkit-slider-thumb{
     -webkit-appearance:none;height:16px;width:16px;border-radius:50%;
-    background:var(--pink);margin-top:-6px;cursor:pointer;
+    background:var(--pink);margin-top:-5px;cursor:pointer;
     box-shadow:0 0 10px var(--pink-g);transition:transform .2s,box-shadow .2s;
 }
 input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3);box-shadow:0 0 18px var(--pink)}
-input[type=range]::-moz-range-track{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;border:none}
+input[type=range]::-moz-range-track{height:6px;background:linear-gradient(90deg,var(--pink) var(--val,0%),rgba(255,255,255,0.08) var(--val,0%));border-radius:3px;border:none}
 input[type=range]::-moz-range-thumb{height:16px;width:16px;border-radius:50%;background:var(--pink);border:none;cursor:pointer;box-shadow:0 0 10px var(--pink-g)}
 .sld-val{min-width:50px;text-align:right;font-size:.85rem;color:var(--text-dim);font-variant-numeric:tabular-nums}
 
@@ -181,7 +185,7 @@ input[type=range]::-moz-range-thumb{height:16px;width:16px;border-radius:50%;bac
 
 /* ═══ WATER TANK ═══ */
 .water-tank{
-    width:90px;height:90px;border-radius:50%;
+    width:105px;height:105px;border-radius:50%;
     border:2px solid rgba(255,255,255,0.08);
     box-shadow:0 0 15px rgba(0,212,255,0.15),inset 0 0 15px rgba(0,212,255,0.1);
     position:relative;overflow:hidden;
@@ -200,8 +204,8 @@ input[type=range]::-moz-range-thumb{height:16px;width:16px;border-radius:50%;bac
     animation:wave 6s linear infinite;
 }
 @keyframes wave{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-.water-text{position:relative;z-index:2;font-size:1.15rem;font-weight:700;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.8)}
-.water-label{position:relative;z-index:2;font-size:0.6rem;color:rgba(255,255,255,0.9);text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.8);margin-top:2px}
+.water-text{position:relative;z-index:2;font-size:1.05rem;font-weight:700;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.8)}
+.water-label{position:relative;z-index:2;font-size:0.55rem;color:rgba(255,255,255,0.9);text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.8);margin-top:4px}
 </style>
 </head>
 <body>
@@ -219,11 +223,11 @@ input[type=range]::-moz-range-thumb{height:16px;width:16px;border-radius:50%;bac
         </div>
         <div class="top-gauge">
             <svg class="gauge-svg" viewBox="0 0 160 95">
-                <text class="gauge-tick" id="gt0" x="18" y="82">0</text>
-                <text class="gauge-tick" id="gt1" x="38" y="42">3</text>
-                <text class="gauge-tick" id="gt2" x="80" y="22">6</text>
-                <text class="gauge-tick" id="gt3" x="122" y="42">9</text>
-                <text class="gauge-tick" id="gt4" x="142" y="82">12</text>
+                <text class="gauge-tick" id="gt0" x="35" y="80">0</text>
+                <text class="gauge-tick" id="gt1" x="48" y="52">3</text>
+                <text class="gauge-tick" id="gt2" x="80" y="38">6</text>
+                <text class="gauge-tick" id="gt3" x="112" y="52">9</text>
+                <text class="gauge-tick" id="gt4" x="125" y="80">12</text>
                 <path class="gauge-bg" d="M 20 80 A 60 60 0 0 1 140 80"/>
                 <path id="gaugeArc" class="gauge-fill" d="M 20 80 A 60 60 0 0 1 140 80" stroke-dasharray="188.5" stroke-dashoffset="188.5" stroke="var(--cyan)"/>
                 <polygon id="gaugeNeedle" class="gauge-needle" points="80,30 77,78 83,78"/>
@@ -271,12 +275,6 @@ input[type=range]::-moz-range-thumb{height:16px;width:16px;border-radius:50%;bac
             Steuerung
         </div>
         <div class="ctrl-list">
-            <!-- Bewässerung Status -->
-            <div class="ctrl-row">
-                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Bewässerung läuft</div>
-                <span class="pill" id="btnWatering">Aus</span>
-            </div>
-
             <div class="ctrl-row">
                 <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Automatik aktiv</div>
                 <label class="tgl"><input type="checkbox" id="chkAuto" onchange="act('Action_AutomaticActive',this.checked)"><span class="tgl-s"></span></label>
@@ -411,11 +409,6 @@ function handleMessage(raw){
         if(d.DeviceStatusOk){pill.className='pill ok';pill.textContent='Alles OK'}
         else{pill.className='pill err';pill.textContent='Fehler'}
 
-        // Watering pill
-        const wp=document.getElementById('btnWatering');
-        if(d.WateringActive){wp.className='pill ok';wp.textContent='Bewässert'}
-        else{wp.className='pill inactive';wp.textContent='Aus';wp.style.background='rgba(255,255,255,0.05)';wp.style.color='var(--text-dim)'}
-
         // Toggles
         document.getElementById('chkAuto').checked=!!d.AutomaticActive;
         document.getElementById('chkBlock').checked=!!d.SperrzeitActive;
@@ -441,13 +434,19 @@ function handleMessage(raw){
 
 function setSld(sId,vId,val,unit){
     const s=document.getElementById(sId);
-    if(s&&document.activeElement!==s){s.value=val}
+    if(s&&document.activeElement!==s){
+        s.value=val;
+        const pct=(val-s.min)/(s.max-s.min)*100;
+        s.style.setProperty('--val',pct+'%');
+    }
     const v=document.getElementById(vId);
     if(v)v.textContent=Math.round(val)+' '+unit;
 }
 function updSld(el,vId,unit){
     const v=document.getElementById(vId);
     if(v)v.textContent=el.value+' '+unit;
+    const pct=(el.value-el.min)/(el.max-el.min)*100;
+    el.style.setProperty('--val',pct+'%');
 }
 function act(id,val){
     if(typeof requestAction!=='undefined')requestAction(id,val);
