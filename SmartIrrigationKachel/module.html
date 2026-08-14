@@ -418,7 +418,7 @@ function updateGauge(flowRate){
     // Needle rotation: -90deg (left) to +90deg (right)
     const angle=-90+pct*180;
     const needle=document.getElementById('gaugeNeedle');
-    needle.setAttribute('transform','rotate('+angle+' 80 80)');
+    needle.style.transform = 'rotate('+angle+'deg)';
 
     // Value text
     const valEl=document.getElementById('gaugeVal');
