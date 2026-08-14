@@ -8,45 +8,24 @@ class SmartIrrigationKachel extends IPSModuleStrict
 {
     use DeviceAvailability_Trait;
 
+    // All SmartLawnAI variable idents we want to monitor
+    private const SLAI_IDENTS = [
+        'SummaryStatus', 'WateringActive', 'CurrentFlowRate',
+        'WaterToday', 'WaterThisWeek', 'WaterThisMonth',
+        'ForecastRainToday', 'ForecastRainTomorrow',
+        'LastGeminiResponse', 'IrrigationLog',
+        'DefaultZielFeuchte', 'DefaultStartSchwellwert',
+        'SickerpauseMinuten', 'GlobalMaxDuration',
+        'AutomaticActive', 'ForceStart', 'SperrzeitActive',
+        'DeviceAvailable'
+    ];
+
     public function Create(): void
     {
         parent::Create();
         $this->DA_RegisterAvailability(900);
-
-        // UI / HTML-SDK
         $this->SetVisualizationType(1);
-
-        // Properties für Meldung & Fortschritt
-        $this->RegisterPropertyInteger('VarMessageTitle', 0);
-        $this->RegisterPropertyInteger('VarProgress', 0);
-        $this->RegisterPropertyInteger('VarRuntime', 0);
-        $this->RegisterPropertyInteger('VarRemaining', 0);
-
-        // Properties für SmartLawnAI Daten
-        $this->RegisterPropertyInteger('VarFlowRate', 0);
-        $this->RegisterPropertyInteger('VarRainToday', 0);
-        $this->RegisterPropertyInteger('VarRainTomorrow', 0);
-        $this->RegisterPropertyInteger('VarConsumptionToday', 0);
-        $this->RegisterPropertyInteger('VarConsumptionWeek', 0);
-        $this->RegisterPropertyInteger('VarConsumptionMonth', 0);
-        $this->RegisterPropertyInteger('VarDeviceStatus', 0);
-
-        // Feuchtigkeitssensoren (Liste als JSON String)
-        $this->RegisterPropertyString('MoistureSensors', '[]');
-
-        // Steuerung
-        $this->RegisterPropertyInteger('CtrlIrrigationActive', 0);
-        $this->RegisterPropertyInteger('CtrlAutoActive', 0);
-        $this->RegisterPropertyInteger('CtrlBlockActive', 0);
-        $this->RegisterPropertyInteger('CtrlManualStart', 0);
-        $this->RegisterPropertyInteger('CtrlSoakPause', 0);
-        $this->RegisterPropertyInteger('CtrlTriggerMoisture', 0);
-        $this->RegisterPropertyInteger('CtrlTargetMoisture', 0);
-        $this->RegisterPropertyInteger('CtrlMaxDuration', 0);
-
-        // KI & Logs
-        $this->RegisterPropertyInteger('VarAiResponse', 0);
-        $this->RegisterPropertyInteger('VarLogInfo', 0);
+        $this->RegisterPropertyInteger('SmartLawnAIID', 0);
     }
 
     public function ApplyChanges(): void
@@ -54,35 +33,39 @@ class SmartIrrigationKachel extends IPSModuleStrict
         parent::ApplyChanges();
         $this->DA_ApplyPresentation();
 
-        // Alle alten Nachrichten-Registrierungen löschen
+        // Unregister all old messages
         foreach ($this->GetMessageList() as $senderID => $messages) {
             foreach ($messages as $message) {
                 $this->UnregisterMessage($senderID, $message);
             }
         }
 
-        // Neue Variablen registrieren
-        $props = [
-            'VarMessageTitle', 'VarProgress', 'VarRuntime', 'VarRemaining',
-            'VarFlowRate', 'VarRainToday', 'VarRainTomorrow', 'VarConsumptionToday', 'VarConsumptionWeek', 'VarConsumptionMonth', 'VarDeviceStatus',
-            'CtrlIrrigationActive', 'CtrlAutoActive', 'CtrlBlockActive', 'CtrlManualStart', 'CtrlSoakPause', 'CtrlTriggerMoisture', 'CtrlTargetMoisture', 'CtrlMaxDuration',
-            'VarAiResponse', 'VarLogInfo'
-        ];
+        $slaiId = $this->ReadPropertyInteger('SmartLawnAIID');
+        if ($slaiId < 1 || !@IPS_InstanceExists($slaiId)) {
+            return;
+        }
 
-        foreach ($props as $propName) {
-            $vid = $this->ReadPropertyInteger($propName);
-            if ($vid > 0 && IPS_VariableExists($vid)) {
+        // Register messages for all known SLAI variables
+        foreach (self::SLAI_IDENTS as $ident) {
+            $vid = @IPS_GetObjectIDByIdent($ident, $slaiId);
+            if ($vid !== false && IPS_VariableExists($vid)) {
                 $this->RegisterMessage($vid, VM_UPDATE);
             }
         }
 
-        // Moisture Sensors registrieren
-        $moistureSensors = json_decode($this->ReadPropertyString('MoistureSensors'), true);
-        if (is_array($moistureSensors)) {
-            foreach ($moistureSensors as $sensor) {
-                $vid = (int)($sensor['VariableID'] ?? 0);
-                if ($vid > 0 && IPS_VariableExists($vid)) {
-                    $this->RegisterMessage($vid, VM_UPDATE);
+        // Also register messages for zone moisture sensors
+        $zonesJson = @IPS_GetProperty($slaiId, 'Zones');
+        if ($zonesJson !== false && $zonesJson !== '') {
+            $zones = json_decode($zonesJson, true);
+            if (is_array($zones)) {
+                foreach ($zones as $zone) {
+                    $sensorId = (int)($zone['SensorID'] ?? 0);
+                    if ($sensorId > 0) {
+                        $resolved = @SLAI_ResolveSensorObject($slaiId, $sensorId);
+                        if (is_array($resolved) && isset($resolved['MoistureID']) && $resolved['MoistureID'] > 0) {
+                            $this->RegisterMessage($resolved['MoistureID'], VM_UPDATE);
+                        }
+                    }
                 }
             }
         }
@@ -97,11 +80,6 @@ class SmartIrrigationKachel extends IPSModuleStrict
         }
     }
 
-    public function GetConfigurationForm(): string
-    {
-        return file_get_contents(__DIR__ . '/form.json');
-    }
-
     public function GetVisualizationTile(): string
     {
         return file_get_contents(__DIR__ . '/module.html');
@@ -114,37 +92,62 @@ class SmartIrrigationKachel extends IPSModuleStrict
             return;
         }
 
-        // Weiterleiten von Frontend-Befehlen an die tatsächliche Variable
-        $propName = '';
+        // Forward actions to SmartLawnAI variables
+        // Ident format: "Action_<SLAI_Ident>"
         if (str_starts_with($Ident, 'Action_')) {
-            $propName = substr($Ident, 7); // e.g. Action_CtrlSoakPause -> CtrlSoakPause
-        }
+            $slaiIdent = substr($Ident, 7);
+            $slaiId = $this->ReadPropertyInteger('SmartLawnAIID');
+            if ($slaiId < 1 || !@IPS_InstanceExists($slaiId)) {
+                return;
+            }
 
-        if ($propName !== '') {
-            $vid = $this->ReadPropertyInteger($propName);
-            if ($vid > 0 && IPS_VariableExists($vid)) {
-                if (IPS_GetVariable($vid)['VariableAction'] > 0) {
+            $vid = @IPS_GetObjectIDByIdent($slaiIdent, $slaiId);
+            if ($vid !== false && IPS_VariableExists($vid)) {
+                $varInfo = IPS_GetVariable($vid);
+                // Cast value to correct type
+                switch ($varInfo['VariableType']) {
+                    case VARIABLETYPE_BOOLEAN:
+                        $Value = (bool)$Value;
+                        break;
+                    case VARIABLETYPE_INTEGER:
+                        $Value = (int)$Value;
+                        break;
+                    case VARIABLETYPE_FLOAT:
+                        $Value = (float)$Value;
+                        break;
+                    case VARIABLETYPE_STRING:
+                        $Value = (string)$Value;
+                        break;
+                }
+
+                if ($varInfo['VariableAction'] > 0) {
                     RequestAction($vid, $Value);
                 } else {
-                    SetValue($vid, $Value); // Fallback falls kein Aktions-Skript hinterlegt ist
+                    SetValue($vid, $Value);
                 }
             }
         }
     }
 
-    private function getVarFormatted(string $propName, $default = '')
+    /**
+     * Read a formatted value from a SmartLawnAI variable by ident
+     */
+    private function readSlaiFormatted(int $slaiId, string $ident, string $default = ''): string
     {
-        $vid = $this->ReadPropertyInteger($propName);
-        if ($vid > 0 && IPS_VariableExists($vid)) {
+        $vid = @IPS_GetObjectIDByIdent($ident, $slaiId);
+        if ($vid !== false && IPS_VariableExists($vid)) {
             return GetValueFormatted($vid);
         }
         return $default;
     }
 
-    private function getVarValue(string $propName, $default = null)
+    /**
+     * Read a raw value from a SmartLawnAI variable by ident
+     */
+    private function readSlaiValue(int $slaiId, string $ident, mixed $default = null): mixed
     {
-        $vid = $this->ReadPropertyInteger($propName);
-        if ($vid > 0 && IPS_VariableExists($vid)) {
+        $vid = @IPS_GetObjectIDByIdent($ident, $slaiId);
+        if ($vid !== false && IPS_VariableExists($vid)) {
             return GetValue($vid);
         }
         return $default;
@@ -152,66 +155,72 @@ class SmartIrrigationKachel extends IPSModuleStrict
 
     private function UpdateData(): void
     {
+        $slaiId = $this->ReadPropertyInteger('SmartLawnAIID');
+        if ($slaiId < 1 || !@IPS_InstanceExists($slaiId)) {
+            $this->UpdateVisualizationValue(json_encode(['error' => 'Keine SmartLawnAI Instanz konfiguriert']));
+            return;
+        }
+
         $payload = [];
-        
-        // Meldung & Fortschritt
-        $payload['MessageTitle'] = $this->getVarFormatted('VarMessageTitle', '-');
-        $payload['Progress'] = (int)$this->getVarValue('VarProgress', 0);
-        $payload['Runtime'] = $this->getVarFormatted('VarRuntime', '0 Min');
-        $payload['Remaining'] = $this->getVarFormatted('VarRemaining', '0 Min');
 
-        // SmartLawnAI Daten
-        $payload['FlowRate'] = $this->getVarFormatted('VarFlowRate', '0,00 l/min');
-        $payload['RainToday'] = $this->getVarFormatted('VarRainToday', '0,00 mm');
-        $payload['RainTomorrow'] = $this->getVarFormatted('VarRainTomorrow', '0,00 mm');
-        $payload['ConsumptionToday'] = $this->getVarFormatted('VarConsumptionToday', '0 L');
-        $payload['ConsumptionWeek'] = $this->getVarFormatted('VarConsumptionWeek', '0 L');
-        $payload['ConsumptionMonth'] = $this->getVarFormatted('VarConsumptionMonth', '0 L');
-        
-        $deviceStatus = $this->getVarValue('VarDeviceStatus', false);
-        $payload['DeviceStatusOk'] = is_bool($deviceStatus) ? $deviceStatus : ((int)$deviceStatus === 0);
+        // Status & Progress (SummaryStatus contains HTML progress bar when watering)
+        $payload['SummaryStatus'] = (string)$this->readSlaiValue($slaiId, 'SummaryStatus', '');
+        $payload['WateringActive'] = (bool)$this->readSlaiValue($slaiId, 'WateringActive', false);
 
-        // Moisture Sensors
+        // Sensor & Weather data
+        $payload['FlowRate'] = $this->readSlaiFormatted($slaiId, 'CurrentFlowRate', '0,00 l/min');
+        $payload['FlowRateRaw'] = (float)$this->readSlaiValue($slaiId, 'CurrentFlowRate', 0.0);
+        $payload['RainToday'] = $this->readSlaiFormatted($slaiId, 'ForecastRainToday', '0,00 mm');
+        $payload['RainTomorrow'] = $this->readSlaiFormatted($slaiId, 'ForecastRainTomorrow', '0,00 mm');
+
+        // Consumption
+        $payload['ConsumptionToday'] = $this->readSlaiFormatted($slaiId, 'WaterToday', '0 L');
+        $payload['ConsumptionWeek'] = $this->readSlaiFormatted($slaiId, 'WaterThisWeek', '0 L');
+        $payload['ConsumptionMonth'] = $this->readSlaiFormatted($slaiId, 'WaterThisMonth', '0 L');
+
+        // Device status
+        $deviceStatus = (int)$this->readSlaiValue($slaiId, 'DeviceAvailable', 0);
+        $payload['DeviceStatusOk'] = ($deviceStatus >= 1);
+
+        // Moisture sensors from zones
         $payload['MoistureSensors'] = [];
-        $moistureSensors = json_decode($this->ReadPropertyString('MoistureSensors'), true);
-        if (is_array($moistureSensors)) {
-            foreach ($moistureSensors as $sensor) {
-                $vid = (int)($sensor['VariableID'] ?? 0);
-                if ($vid > 0 && IPS_VariableExists($vid)) {
-                    $val = GetValueFormatted($vid);
-                    $raw = (int)GetValue($vid);
-                    $payload['MoistureSensors'][] = [
-                        'Name' => $sensor['Name'],
-                        'Value' => $val,
-                        'Raw' => $raw
-                    ];
+        $zonesJson = @IPS_GetProperty($slaiId, 'Zones');
+        if ($zonesJson !== false && $zonesJson !== '') {
+            $zones = json_decode($zonesJson, true);
+            if (is_array($zones)) {
+                foreach ($zones as $zone) {
+                    $sensorId = (int)($zone['SensorID'] ?? 0);
+                    $zoneName = $zone['GroupName'] ?? 'Zone';
+                    if ($sensorId > 0) {
+                        $resolved = @SLAI_ResolveSensorObject($slaiId, $sensorId);
+                        if (is_array($resolved) && isset($resolved['MoistureID']) && $resolved['MoistureID'] > 0) {
+                            $moistureVal = GetValue($resolved['MoistureID']);
+                            $payload['MoistureSensors'][] = [
+                                'Name' => 'Feuchte ' . $zoneName,
+                                'Value' => round((float)$moistureVal, 1) . ' %',
+                                'Raw' => (int)round((float)$moistureVal)
+                            ];
+                        }
+                    }
                 }
             }
         }
 
-        // Steuerung
-        $payload['CtrlIrrigationActive'] = (bool)$this->getVarValue('CtrlIrrigationActive', false);
-        $payload['CtrlAutoActive'] = (bool)$this->getVarValue('CtrlAutoActive', false);
-        $payload['CtrlBlockActive'] = (bool)$this->getVarValue('CtrlBlockActive', false);
-        $payload['CtrlManualStart'] = (bool)$this->getVarValue('CtrlManualStart', false);
-        
-        $payload['CtrlSoakPause'] = (int)$this->getVarValue('CtrlSoakPause', 0);
-        $payload['CtrlTriggerMoisture'] = (int)$this->getVarValue('CtrlTriggerMoisture', 0);
-        $payload['CtrlTargetMoisture'] = (int)$this->getVarValue('CtrlTargetMoisture', 0);
-        $payload['CtrlMaxDuration'] = (int)$this->getVarValue('CtrlMaxDuration', 0);
+        // Controls (Sliders & Switches)
+        $payload['AutomaticActive'] = (bool)$this->readSlaiValue($slaiId, 'AutomaticActive', false);
+        $payload['SperrzeitActive'] = (bool)$this->readSlaiValue($slaiId, 'SperrzeitActive', false);
+        $payload['ForceStart'] = (bool)$this->readSlaiValue($slaiId, 'ForceStart', false);
 
-        // KI & Logs
-        $payload['AiResponse'] = $this->getVarFormatted('VarAiResponse', '');
-        
-        $logInfo = $this->getVarValue('VarLogInfo', '');
-        if (is_string($logInfo)) {
-            // Check if it's JSON or HTML. Just pass as is. We'll handle in JS.
-            $payload['LogInfo'] = $logInfo;
-        } else {
-            $payload['LogInfo'] = '';
-        }
+        $payload['SickerpauseMinuten'] = (int)$this->readSlaiValue($slaiId, 'SickerpauseMinuten', 0);
+        $payload['TriggerFeuchte'] = (float)$this->readSlaiValue($slaiId, 'DefaultStartSchwellwert', 0);
+        $payload['ZielFeuchte'] = (float)$this->readSlaiValue($slaiId, 'DefaultZielFeuchte', 0);
+        $payload['MaxDuration'] = (int)$this->readSlaiValue($slaiId, 'GlobalMaxDuration', 0);
 
-        $this->UpdateVisualizationValue(json_encode($payload));
+        // AI & Logs
+        $payload['AiResponse'] = (string)$this->readSlaiValue($slaiId, 'LastGeminiResponse', '');
+        $payload['LogInfo'] = (string)$this->readSlaiValue($slaiId, 'IrrigationLog', '');
+
+        $this->UpdateVisualizationValue(json_encode($payload, JSON_UNESCAPED_UNICODE));
         $this->DA_SetAvailable(true);
     }
 }

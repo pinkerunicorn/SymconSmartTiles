@@ -1,646 +1,370 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Irrigation Kachel</title>
-    <style>
-        :root {
-            --bg-color: #1a1a1e;
-            --glass-bg: rgba(30, 30, 35, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --text-main: #f0f0f0;
-            --text-muted: #888890;
-            --accent-pink: #ff4785;
-            --accent-pink-glow: rgba(255, 71, 133, 0.5);
-            --accent-blue: #00b4d8;
-            --accent-blue-glow: rgba(0, 180, 216, 0.5);
-            --success-green: #00e676;
-            --success-green-glow: rgba(0, 230, 118, 0.4);
-            --danger-red: #ff3366;
-            --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            --radius-large: 16px;
-            --radius-small: 8px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+    --bg:#12121a;
+    --panel:rgba(22,22,32,0.85);
+    --panel-border:rgba(255,255,255,0.06);
+    --text:#e8e8ec;
+    --text-dim:#6e6e7a;
+    --pink:#ff4785;
+    --pink-g:rgba(255,71,133,0.45);
+    --cyan:#00d4ff;
+    --cyan-g:rgba(0,212,255,0.35);
+    --green:#00e676;
+    --green-g:rgba(0,230,118,0.35);
+    --red:#ff3366;
+    --orange:#ffb703;
+    --purple:#b388ff;
+    --font:'Segoe UI',system-ui,-apple-system,sans-serif;
+    --r:14px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;font-size:14px;-webkit-font-smoothing:antialiased}
+body{padding:14px}
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: var(--font-family);
-            margin: 0;
-            padding: 16px;
-            box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-        }
+/* ═══ GRID ═══ */
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto 1fr;gap:14px;height:100%}
+@media(max-width:1200px){.grid{grid-template-columns:1fr 1fr}.col-r{grid-column:span 2}}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.col-r,.row-top{grid-column:span 1}}
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            grid-template-rows: auto 1fr;
-            gap: 16px;
-            height: 100%;
-        }
+/* ═══ PANELS ═══ */
+.p{
+    background:var(--panel);border:1px solid var(--panel-border);border-radius:var(--r);
+    padding:18px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    display:flex;flex-direction:column;
+    box-shadow:0 4px 24px rgba(0,0,0,0.4);
+    transition:transform .35s cubic-bezier(.2,.9,.3,1.2),box-shadow .35s,border-color .35s;
+}
+.p:hover{
+    transform:translateY(-3px) scale(1.005);
+    box-shadow:0 8px 40px rgba(0,0,0,0.5),0 0 20px var(--pink-g);
+    border-color:rgba(255,71,133,0.15);
+}
+.row-top{grid-column:1/-1}
+.col-r{grid-column:3;display:flex;flex-direction:column;gap:14px}
 
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .grid-right {
-                grid-column: span 2;
-            }
-        }
-        @media (max-width: 800px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            .grid-right, .grid-top {
-                grid-column: span 1;
-            }
-        }
+/* ═══ PANEL HEADER ═══ */
+.ph{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-weight:700;font-size:1.05rem;letter-spacing:.4px}
+.ph svg{width:22px;height:22px;fill:none;stroke:var(--cyan);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px var(--cyan-g));transition:filter .3s}
+.p:hover .ph svg{filter:drop-shadow(0 0 10px var(--cyan))}
 
-        .panel {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-large);
-            padding: 20px;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
+/* ═══ STATUS BAR (TOP) ═══ */
+.status-html{font-size:.95rem;line-height:1.6;color:var(--text-dim)}
+.status-html *{max-width:100%!important}
 
-        .panel:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 15px rgba(255, 71, 133, 0.1);
-            border-color: rgba(255, 255, 255, 0.15);
-        }
+/* ═══ WATERING INDICATOR ═══ */
+.watering-badge{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:4px 12px;border-radius:20px;font-size:.8rem;font-weight:700;text-transform:uppercase;
+    transition:all .4s;
+}
+.watering-badge.active{
+    background:rgba(0,212,255,0.15);color:var(--cyan);border:1px solid var(--cyan);
+    box-shadow:0 0 14px var(--cyan-g);
+    animation:neonPulse 2s ease-in-out infinite;
+}
+.watering-badge.inactive{background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.08)}
+@keyframes neonPulse{0%,100%{box-shadow:0 0 14px var(--cyan-g)}50%{box-shadow:0 0 25px var(--cyan),0 0 40px var(--cyan-g)}}
 
-        .grid-top { grid-column: 1 / -1; }
-        .grid-left { grid-column: 1; }
-        .grid-center { grid-column: 2; }
-        .grid-right { grid-column: 3; display: flex; flex-direction: column; gap: 16px; }
+/* ═══ DATA LIST ═══ */
+.dl{display:flex;flex-direction:column;gap:2px}
+.di{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:9px 10px;border-radius:8px;
+    transition:background .25s,transform .2s;
+    cursor:default;
+}
+.di:hover{background:rgba(255,71,133,0.06);transform:translateX(3px)}
+.dl-lbl{display:flex;align-items:center;gap:9px;color:var(--text-dim);font-size:.9rem}
+.dl-lbl svg{width:16px;height:16px;stroke:var(--text-dim);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:all .3s}
+.di:hover .dl-lbl svg{stroke:var(--pink);filter:drop-shadow(0 0 4px var(--pink-g))}
+.dl-val{font-weight:600;font-size:.9rem;transition:color .3s;font-variant-numeric:tabular-nums}
+.di:hover .dl-val{color:var(--pink)}
 
-        .panel-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            color: #fff;
-        }
+/* ═══ MOISTURE BARS ═══ */
+.moist-bar-wrap{margin-top:4px}
+.moist-item{margin-bottom:10px}
+.moist-head{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:5px}
+.moist-head span:first-child{color:var(--text-dim)}
+.moist-head span:last-child{font-weight:600;color:var(--cyan);text-shadow:0 0 6px var(--cyan-g)}
+.moist-track{height:8px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.5)}
+.moist-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.4,0,.2,1);position:relative}
+.moist-fill::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);
+    transform:translateX(-100%);animation:mShimmer 3s infinite;
+}
+@keyframes mShimmer{100%{transform:translateX(100%)}}
+.moist-fill.low{background:linear-gradient(90deg,var(--red),var(--orange))}
+.moist-fill.mid{background:linear-gradient(90deg,var(--orange),var(--cyan))}
+.moist-fill.high{background:linear-gradient(90deg,var(--cyan),var(--green));box-shadow:0 0 10px var(--green-g)}
 
-        .panel-header svg {
-            margin-right: 12px;
-            width: 24px;
-            height: 24px;
-            fill: none;
-            stroke: var(--accent-blue);
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            filter: drop-shadow(0 0 4px var(--accent-blue-glow));
-        }
+/* ═══ STATUS PILL ═══ */
+.pill{padding:4px 10px;border-radius:14px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;transition:all .3s}
+.pill.ok{background:var(--green);color:#000;box-shadow:0 0 12px var(--green-g)}
+.pill.err{background:var(--red);color:#fff;box-shadow:0 0 12px rgba(255,51,102,0.5)}
+.pill:hover{transform:scale(1.08)}
 
-        /* Meldung & Fortschritt */
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 12px;
-        }
-        .progress-title {
-            font-size: 1.2rem;
-            font-weight: 500;
-        }
-        .progress-percent {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--accent-blue);
-            text-shadow: 0 0 10px var(--accent-blue-glow);
-        }
-        .progress-track {
-            width: 100%;
-            height: 12px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 6px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent-blue), #00d4ff);
-            border-radius: 6px;
-            width: 0%;
-            transition: width 1s ease-in-out;
-            box-shadow: 0 0 15px var(--accent-blue-glow);
-            position: relative;
-        }
-        /* Animated shine effect on progress bar */
-        .progress-fill::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transform: translateX(-100%);
-            animation: shimmer 2.5s infinite;
-        }
-        @keyframes shimmer {
-            100% { transform: translateX(100%); }
-        }
-        .progress-footer {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 8px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
+/* ═══ STEUERUNG ═══ */
+.ctrl-list{display:flex;flex-direction:column;gap:14px}
+.ctrl-row{display:flex;justify-content:space-between;align-items:center}
+.ctrl-lbl{display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--text-dim)}
+.ctrl-lbl svg{width:16px;height:16px;stroke:var(--text-dim);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
-        /* SmartLawnAI Data List */
-        .data-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .data-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-            transition: background 0.2s;
-            border-radius: 6px;
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-        .data-item:hover {
-            background: rgba(255,255,255,0.03);
-        }
-        .data-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-        .data-label svg {
-            width: 18px;
-            height: 18px;
-            stroke: var(--text-muted);
-            transition: stroke 0.3s;
-        }
-        .data-item:hover .data-label svg {
-            stroke: var(--accent-blue);
-            filter: drop-shadow(0 0 3px var(--accent-blue-glow));
-        }
-        .data-value {
-            font-weight: 500;
-            font-size: 0.95rem;
-        }
-        .status-pill {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            background: rgba(255,255,255,0.1);
-        }
-        .status-pill.ok {
-            background: var(--success-green);
-            color: #000;
-            box-shadow: 0 0 12px var(--success-green-glow);
-        }
-        .status-pill.error {
-            background: var(--danger-red);
-            color: #fff;
-            box-shadow: 0 0 12px rgba(255,51,102,0.5);
-        }
+/* Toggle */
+.tgl{position:relative;width:44px;height:24px;flex-shrink:0}
+.tgl input{opacity:0;width:0;height:0;position:absolute}
+.tgl-s{
+    position:absolute;inset:0;cursor:pointer;border-radius:24px;
+    background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);
+    transition:.4s;
+}
+.tgl-s::before{
+    content:'';position:absolute;width:18px;height:18px;left:2px;bottom:2px;
+    background:var(--text-dim);border-radius:50%;transition:.4s;
+}
+.tgl input:checked+.tgl-s{background:rgba(255,71,133,0.2);border-color:var(--pink);box-shadow:0 0 12px var(--pink-g)}
+.tgl input:checked+.tgl-s::before{transform:translateX(20px);background:var(--pink);box-shadow:0 0 10px var(--pink)}
 
-        /* Steuerung */
-        .control-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .control-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 4px 0;
-        }
-        .control-label {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.95rem;
-        }
-        .control-label svg {
-            width: 18px;
-            height: 18px;
-            stroke: var(--text-muted);
-        }
-        
-        /* Toggle Switch Neon */
-        .toggle-switch {
-            position: relative;
-            width: 44px;
-            height: 24px;
-        }
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider-toggle {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(255,255,255,0.1);
-            transition: .4s;
-            border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .slider-toggle:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 2px;
-            bottom: 2px;
-            background-color: var(--text-muted);
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .slider-toggle {
-            background-color: rgba(255, 71, 133, 0.2);
-            border-color: var(--accent-pink);
-            box-shadow: 0 0 10px var(--accent-pink-glow);
-        }
-        input:checked + .slider-toggle:before {
-            transform: translateX(20px);
-            background-color: var(--accent-pink);
-            box-shadow: 0 0 8px var(--accent-pink);
-        }
+/* Slider */
+.sld-wrap{width:100%;margin-top:6px}
+.sld-row{display:flex;align-items:center;gap:10px}
+input[type=range]{
+    flex:1;-webkit-appearance:none;background:transparent;
+}
+input[type=range]:focus{outline:none}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:rgba(255,255,255,0.08);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;height:16px;width:16px;border-radius:50%;
+    background:var(--pink);margin-top:-6px;cursor:pointer;
+    box-shadow:0 0 10px var(--pink-g);transition:transform .2s,box-shadow .2s;
+}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3);box-shadow:0 0 18px var(--pink)}
+input[type=range]::-moz-range-track{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;border:none}
+input[type=range]::-moz-range-thumb{height:16px;width:16px;border-radius:50%;background:var(--pink);border:none;cursor:pointer;box-shadow:0 0 10px var(--pink-g)}
+.sld-val{min-width:50px;text-align:right;font-size:.85rem;color:var(--text-dim);font-variant-numeric:tabular-nums}
 
-        /* Range Slider Neon */
-        .control-slider-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-            margin-top: 8px;
-        }
-        .control-slider-container input[type=range] {
-            flex-grow: 1;
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-        }
-        .control-slider-container input[type=range]:focus {
-            outline: none;
-        }
-        .control-slider-container input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 4px;
-            cursor: pointer;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-        }
-        .control-slider-container input[type=range]::-webkit-slider-thumb {
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            background: var(--accent-pink);
-            cursor: pointer;
-            -webkit-appearance: none;
-            margin-top: -6px;
-            box-shadow: 0 0 10px var(--accent-pink-glow);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .control-slider-container input[type=range]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-            box-shadow: 0 0 15px var(--accent-pink);
-        }
-        .slider-val {
-            min-width: 45px;
-            text-align: right;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
+/* ═══ KI & LOG ═══ */
+.ki-txt{font-size:.9rem;line-height:1.55;color:#c0c0c8;overflow-y:auto;flex:1}
+.log-wrap{flex:1;overflow-y:auto;max-height:350px;display:flex;flex-direction:column;gap:8px;padding-right:4px}
+.log-wrap::-webkit-scrollbar{width:5px}
+.log-wrap::-webkit-scrollbar-track{background:transparent}
+.log-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:3px}
+.log-wrap::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.15)}
 
-        /* Button Neon */
-        .btn-neon {
-            background: rgba(0, 180, 216, 0.15);
-            color: var(--accent-blue);
-            border: 1px solid var(--accent-blue);
-            padding: 6px 16px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-shadow: 0 0 5px var(--accent-blue-glow);
-            box-shadow: 0 0 10px rgba(0, 180, 216, 0.2);
-        }
-        .btn-neon.active {
-            background: var(--accent-blue);
-            color: #000;
-            box-shadow: 0 0 15px var(--accent-blue);
-            text-shadow: none;
-        }
+/* ═══ WATER DROP ANIMATION ═══ */
+.drop{display:inline-block;animation:dropFloat 2.5s ease-in-out infinite}
+@keyframes dropFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 
-        /* KI & Logs */
-        .ki-text {
-            font-size: 0.95rem;
-            line-height: 1.5;
-            color: #d0d0d0;
-            flex-grow: 1;
-        }
-        .log-container {
-            flex-grow: 1;
-            overflow-y: auto;
-            max-height: 300px;
-            font-size: 0.85rem;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding-right: 5px;
-        }
-        /* Scrollbar */
-        .log-container::-webkit-scrollbar { width: 6px; }
-        .log-container::-webkit-scrollbar-track { background: transparent; }
-        .log-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-        .log-container::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
-
-        .log-entry {
-            background: rgba(255,255,255,0.03);
-            border-left: 3px solid var(--accent-blue);
-            padding: 10px;
-            border-radius: 0 6px 6px 0;
-            transition: background 0.3s;
-        }
-        .log-entry:hover {
-            background: rgba(255,255,255,0.06);
-        }
-        .log-entry.error { border-left-color: var(--danger-red); }
-        .log-entry.success { border-left-color: var(--success-green); }
-        .log-entry.warning { border-left-color: #ffb703; }
-        
-        .log-time { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
-        .log-title { font-weight: 600; margin-bottom: 2px; }
-        .log-desc { color: #b0b0b0; }
-
-        .water-drop {
-            display: inline-block;
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-4px); }
-            100% { transform: translateY(0px); }
-        }
-    </style>
+/* ═══ SPRINKLER ANIMATION ═══ */
+.sprinkler-active .ph svg{animation:sprinklerSpin 2s linear infinite}
+@keyframes sprinklerSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+</style>
 </head>
 <body>
+<div class="grid">
 
-<div class="dashboard-grid">
-    <!-- Top: Meldung / Fortschritt -->
-    <div class="panel grid-top">
-        <div class="panel-header">
-            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <!-- ═══ TOP: STATUS ═══ -->
+    <div class="p row-top" id="panelStatus">
+        <div class="ph">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             Meldung
+            <span style="margin-left:auto" id="waterBadge" class="watering-badge inactive">Inaktiv</span>
         </div>
-        <div class="progress-header">
-            <div class="progress-title" id="valMsgTitle">Keine aktive Bewässerung</div>
-            <div class="progress-percent" id="valProgressPct">0%</div>
-        </div>
-        <div class="progress-track">
-            <div class="progress-fill" id="valProgressBar" style="width: 0%"></div>
-        </div>
-        <div class="progress-footer">
-            <div>Laufzeit: <span id="valRuntime">0 Min</span></div>
-            <div>Verbleibend: <span id="valRemaining">0 Min</span></div>
-        </div>
+        <div class="status-html" id="valStatus">Warte auf Daten...</div>
     </div>
 
-    <!-- Left: SmartLawnAI -->
-    <div class="panel grid-left">
-        <div class="panel-header">
-            <svg viewBox="0 0 24 24" class="water-drop"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+    <!-- ═══ LEFT: SMARTLAWNAI DATA ═══ -->
+    <div class="p">
+        <div class="ph">
+            <svg viewBox="0 0 24 24" class="drop"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
             SmartLawnAI
         </div>
-        <div class="data-list" id="lawnDataList">
-            <!-- Dynamically populated -->
+        <div class="dl">
+            <div class="di"><div class="dl-lbl"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Aktueller Durchfluss</div><div class="dl-val" id="valFlow">-</div></div>
+            <div class="di"><div class="dl-lbl"><svg viewBox="0 0 24 24"><path d="M20 16.58A5 5 0 0018 7h-1.26A8 8 0 104 15.25"/></svg>Regen Heute</div><div class="dl-val" id="valRainT">-</div></div>
+            <div class="di"><div class="dl-lbl"><svg viewBox="0 0 24 24"><path d="M20 16.58A5 5 0 0018 7h-1.26A8 8 0 104 15.25"/></svg>Regen Morgen</div><div class="dl-val" id="valRainM">-</div></div>
+            <div class="di"><div class="dl-lbl"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Heute</div><div class="dl-val" id="valToday">-</div></div>
+            <div class="di"><div class="dl-lbl"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Diese Woche</div><div class="dl-val" id="valWeek">-</div></div>
+            <div class="di"><div class="dl-lbl"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Dieser Monat</div><div class="dl-val" id="valMonth">-</div></div>
+        </div>
+
+        <!-- Moisture -->
+        <div class="moist-bar-wrap" id="moistBars"></div>
+
+        <!-- Device Status -->
+        <div class="di" style="margin-top:8px">
+            <div class="dl-lbl"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Gerätestatus</div>
+            <span class="pill" id="pillDevice">-</span>
         </div>
     </div>
 
-    <!-- Center: Steuerung -->
-    <div class="panel grid-center">
-        <div class="panel-header">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    <!-- ═══ CENTER: STEUERUNG ═══ -->
+    <div class="p" id="panelCtrl">
+        <div class="ph">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
             Steuerung
         </div>
-        <div class="control-list">
-            <div class="control-item">
-                <div class="control-label"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg> Bewässerung läuft</div>
-                <div class="btn-neon" id="btnIrrigation" onclick="sendAction('Action_CtrlIrrigationActive', !currentData.CtrlIrrigationActive)">Bewässern</div>
-            </div>
-            
-            <div class="control-item">
-                <div class="control-label"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Automatik aktiv</div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="chkAuto" onchange="sendAction('Action_CtrlAutoActive', this.checked)">
-                    <span class="slider-toggle"></span>
-                </label>
-            </div>
-            
-            <div class="control-item">
-                <div class="control-label"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg> Sperrzeit aktiv</div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="chkBlock" onchange="sendAction('Action_CtrlBlockActive', this.checked)">
-                    <span class="slider-toggle"></span>
-                </label>
+        <div class="ctrl-list">
+            <!-- Bewässerung Status -->
+            <div class="ctrl-row">
+                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Bewässerung läuft</div>
+                <span class="pill" id="btnWatering">Aus</span>
             </div>
 
-            <div class="control-item">
-                <div class="control-label"><svg viewBox="0 0 24 24"><path d="M5 12h14"></path><path d="M12 5l7 7-7 7"></path></svg> Manuell Starten</div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="chkManual" onchange="sendAction('Action_CtrlManualStart', this.checked)">
-                    <span class="slider-toggle"></span>
-                </label>
+            <div class="ctrl-row">
+                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Automatik aktiv</div>
+                <label class="tgl"><input type="checkbox" id="chkAuto" onchange="act('Action_AutomaticActive',this.checked)"><span class="tgl-s"></span></label>
             </div>
 
-            <div style="margin-top: 10px;">
-                <div class="control-label"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Sickerpause</div>
-                <div class="control-slider-container">
-                    <input type="range" id="sldSoak" min="0" max="120" onchange="sendAction('Action_CtrlSoakPause', parseInt(this.value))">
-                    <span class="slider-val" id="valSoak">0 Min</span>
-                </div>
+            <div class="ctrl-row">
+                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Sperrzeit aktiv</div>
+                <label class="tgl"><input type="checkbox" id="chkBlock" onchange="act('Action_SperrzeitActive',this.checked)"><span class="tgl-s"></span></label>
             </div>
 
-            <div>
-                <div class="control-label"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg> Trigger Feuchte</div>
-                <div class="control-slider-container">
-                    <input type="range" id="sldTrigger" min="0" max="100" onchange="sendAction('Action_CtrlTriggerMoisture', parseInt(this.value))">
-                    <span class="slider-val" id="valTrigger">0 %</span>
-                </div>
+            <div class="ctrl-row">
+                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>Manuell Starten</div>
+                <label class="tgl"><input type="checkbox" id="chkForce" onchange="act('Action_ForceStart',this.checked)"><span class="tgl-s"></span></label>
             </div>
 
-            <div>
-                <div class="control-label"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg> Ziel Feuchte</div>
-                <div class="control-slider-container">
-                    <input type="range" id="sldTarget" min="0" max="100" onchange="sendAction('Action_CtrlTargetMoisture', parseInt(this.value))">
-                    <span class="slider-val" id="valTarget">0 %</span>
-                </div>
+            <!-- Sliders -->
+            <div class="sld-wrap">
+                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Sickerpause</div>
+                <div class="sld-row"><input type="range" id="sldSoak" min="0" max="180" step="5" oninput="updSld(this,'valSoak','Min')" onchange="act('Action_SickerpauseMinuten',+this.value)"><span class="sld-val" id="valSoak">0 Min</span></div>
             </div>
-
-            <div>
-                <div class="control-label"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Max Dauer</div>
-                <div class="control-slider-container">
-                    <input type="range" id="sldMaxDur" min="0" max="120" onchange="sendAction('Action_CtrlMaxDuration', parseInt(this.value))">
-                    <span class="slider-val" id="valMaxDur">0 Min</span>
-                </div>
+            <div class="sld-wrap">
+                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Trigger Feuchte</div>
+                <div class="sld-row"><input type="range" id="sldTrigger" min="0" max="100" step="5" oninput="updSld(this,'valTrigger','%')" onchange="act('Action_DefaultStartSchwellwert',+this.value)"><span class="sld-val" id="valTrigger">0%</span></div>
+            </div>
+            <div class="sld-wrap">
+                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Ziel Feuchte</div>
+                <div class="sld-row"><input type="range" id="sldTarget" min="0" max="100" step="5" oninput="updSld(this,'valTarget','%')" onchange="act('Action_DefaultZielFeuchte',+this.value)"><span class="sld-val" id="valTarget">0%</span></div>
+            </div>
+            <div class="sld-wrap">
+                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Max Dauer</div>
+                <div class="sld-row"><input type="range" id="sldMax" min="0" max="180" step="5" oninput="updSld(this,'valMax','Min')" onchange="act('Action_GlobalMaxDuration',+this.value)"><span class="sld-val" id="valMax">0 Min</span></div>
             </div>
         </div>
     </div>
 
-    <!-- Right: KI & Logs -->
-    <div class="grid-right">
-        <div class="panel" style="flex: 1;">
-            <div class="panel-header">
-                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="9" y2="15"></line><line x1="15" y1="9" x2="15" y2="15"></line></svg>
+    <!-- ═══ RIGHT: KI & LOG ═══ -->
+    <div class="col-r">
+        <div class="p" style="flex:1">
+            <div class="ph">
+                <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
                 KI Antwort
             </div>
-            <div class="ki-text" id="valAiResponse">Lade KI Status...</div>
+            <div class="ki-txt" id="valAI">Lade KI Status...</div>
         </div>
-        <div class="panel" style="flex: 2;">
-            <div class="panel-header">
-                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <div class="p" style="flex:2">
+            <div class="ph">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 Loginfo
             </div>
-            <div class="log-container" id="logFeed">
-                <!-- Logs will be inserted here -->
-            </div>
+            <div class="log-wrap" id="logFeed"><div style="color:var(--text-dim);padding:10px">Keine Logs</div></div>
         </div>
     </div>
 </div>
 
 <script>
-    let currentData = {};
+let D={};
 
-    function handleMessage(data) {
-        try {
-            const payload = typeof data === 'string' ? JSON.parse(data) : data;
-            currentData = payload;
+function handleMessage(raw){
+    try{
+        const d=typeof raw==='string'?JSON.parse(raw):raw;
+        if(d.error){document.getElementById('valStatus').textContent=d.error;return}
+        D=d;
 
-            // Top Panel
-            document.getElementById('valMsgTitle').textContent = payload.MessageTitle || 'Keine aktive Bewässerung';
-            document.getElementById('valProgressPct').textContent = (payload.Progress || 0) + '%';
-            document.getElementById('valProgressBar').style.width = (payload.Progress || 0) + '%';
-            document.getElementById('valRuntime').textContent = payload.Runtime || '0 Min';
-            document.getElementById('valRemaining').textContent = payload.Remaining || '0 Min';
+        // Status (contains HTML progress bar from SmartLawnAI)
+        const statusEl=document.getElementById('valStatus');
+        statusEl.innerHTML=d.SummaryStatus||'Bereit';
 
-            // Left Panel (SmartLawnAI)
-            const listEl = document.getElementById('lawnDataList');
-            listEl.innerHTML = '';
-            
-            const staticItems = [
-                { label: 'Aktueller Durchfluss', val: payload.FlowRate, icon: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>' },
-                { label: 'Regen Heute', val: payload.RainToday, icon: '<path d="M16 13v8M8 13v8M12 15v8M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"></path>' },
-                { label: 'Regen Morgen', val: payload.RainTomorrow, icon: '<path d="M16 13v8M8 13v8M12 15v8M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"></path>' },
-                { label: 'Heute', val: payload.ConsumptionToday, icon: '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>' },
-                { label: 'Diese Woche', val: payload.ConsumptionWeek, icon: '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>' },
-                { label: 'Dieser Monat', val: payload.ConsumptionMonth, icon: '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>' }
-            ];
+        // Watering badge
+        const badge=document.getElementById('waterBadge');
+        if(d.WateringActive){
+            badge.className='watering-badge active';badge.textContent='Bewässert';
+            document.getElementById('panelStatus').classList.add('sprinkler-active');
+        }else{
+            badge.className='watering-badge inactive';badge.textContent='Inaktiv';
+            document.getElementById('panelStatus').classList.remove('sprinkler-active');
+        }
 
-            staticItems.forEach(item => {
-                listEl.innerHTML += `
-                    <div class="data-item">
-                        <div class="data-label"><svg viewBox="0 0 24 24">${item.icon}</svg> ${item.label}</div>
-                        <div class="data-value">${item.val}</div>
-                    </div>
-                `;
+        // Data values
+        document.getElementById('valFlow').textContent=d.FlowRate||'-';
+        document.getElementById('valRainT').textContent=d.RainToday||'-';
+        document.getElementById('valRainM').textContent=d.RainTomorrow||'-';
+        document.getElementById('valToday').textContent=d.ConsumptionToday||'-';
+        document.getElementById('valWeek').textContent=d.ConsumptionWeek||'-';
+        document.getElementById('valMonth').textContent=d.ConsumptionMonth||'-';
+
+        // Moisture bars
+        const mb=document.getElementById('moistBars');
+        if(d.MoistureSensors&&d.MoistureSensors.length){
+            let h='';
+            d.MoistureSensors.forEach(s=>{
+                const r=Math.min(100,Math.max(0,s.Raw));
+                const cls=r<30?'low':r<60?'mid':'high';
+                h+=`<div class="moist-item">
+                    <div class="moist-head"><span>${s.Name}</span><span>${s.Value}</span></div>
+                    <div class="moist-track"><div class="moist-fill ${cls}" style="width:${r}%"></div></div>
+                </div>`;
             });
+            mb.innerHTML=h;
+        }else{mb.innerHTML=''}
 
-            if (payload.MoistureSensors && payload.MoistureSensors.length > 0) {
-                payload.MoistureSensors.forEach(s => {
-                    listEl.innerHTML += `
-                        <div class="data-item">
-                            <div class="data-label"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg> ${s.Name}</div>
-                            <div class="data-value">${s.Value}</div>
-                        </div>
-                    `;
-                });
-            }
+        // Device pill
+        const pill=document.getElementById('pillDevice');
+        if(d.DeviceStatusOk){pill.className='pill ok';pill.textContent='Alles OK'}
+        else{pill.className='pill err';pill.textContent='Fehler'}
 
-            const statusClass = payload.DeviceStatusOk ? 'ok' : 'error';
-            const statusText = payload.DeviceStatusOk ? 'Alles OK' : 'Fehler';
-            listEl.innerHTML += `
-                <div class="data-item">
-                    <div class="data-label"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> Gerätestatus</div>
-                    <div class="status-pill ${statusClass}">${statusText}</div>
-                </div>
-            `;
+        // Watering pill
+        const wp=document.getElementById('btnWatering');
+        if(d.WateringActive){wp.className='pill ok';wp.textContent='Bewässert'}
+        else{wp.className='pill inactive';wp.textContent='Aus';wp.style.background='rgba(255,255,255,0.05)';wp.style.color='var(--text-dim)'}
 
-            // Center Panel (Steuerung)
-            const btnIrrigation = document.getElementById('btnIrrigation');
-            if (payload.CtrlIrrigationActive) {
-                btnIrrigation.classList.add('active');
-                btnIrrigation.textContent = 'Bewässert';
-            } else {
-                btnIrrigation.classList.remove('active');
-                btnIrrigation.textContent = 'Aus';
-            }
+        // Toggles
+        document.getElementById('chkAuto').checked=!!d.AutomaticActive;
+        document.getElementById('chkBlock').checked=!!d.SperrzeitActive;
+        document.getElementById('chkForce').checked=!!d.ForceStart;
 
-            document.getElementById('chkAuto').checked = payload.CtrlAutoActive;
-            document.getElementById('chkBlock').checked = payload.CtrlBlockActive;
-            document.getElementById('chkManual').checked = payload.CtrlManualStart;
+        // Sliders
+        setSld('sldSoak','valSoak',d.SickerpauseMinuten||0,'Min');
+        setSld('sldTrigger','valTrigger',d.TriggerFeuchte||0,'%');
+        setSld('sldTarget','valTarget',d.ZielFeuchte||0,'%');
+        setSld('sldMax','valMax',d.MaxDuration||0,'Min');
 
-            document.getElementById('sldSoak').value = payload.CtrlSoakPause;
-            document.getElementById('valSoak').textContent = payload.CtrlSoakPause + ' Min';
+        // AI
+        const aiEl=document.getElementById('valAI');
+        aiEl.innerHTML=(d.AiResponse||'Keine KI-Antwort').replace(/\n/g,'<br>');
 
-            document.getElementById('sldTrigger').value = payload.CtrlTriggerMoisture;
-            document.getElementById('valTrigger').textContent = payload.CtrlTriggerMoisture + ' %';
+        // Log (raw HTML from SmartLawnAI)
+        const logEl=document.getElementById('logFeed');
+        if(d.LogInfo&&d.LogInfo.trim()){logEl.innerHTML=d.LogInfo}
+        else{logEl.innerHTML='<div style="color:var(--text-dim);padding:10px">Keine Logs</div>'}
 
-            document.getElementById('sldTarget').value = payload.CtrlTargetMoisture;
-            document.getElementById('valTarget').textContent = payload.CtrlTargetMoisture + ' %';
+    }catch(e){console.error('Parse error:',e)}
+}
 
-            document.getElementById('sldMaxDur').value = payload.CtrlMaxDuration;
-            document.getElementById('valMaxDur').textContent = payload.CtrlMaxDuration + ' Min';
+function setSld(sId,vId,val,unit){
+    const s=document.getElementById(sId);
+    if(s&&document.activeElement!==s){s.value=val}
+    const v=document.getElementById(vId);
+    if(v)v.textContent=Math.round(val)+' '+unit;
+}
+function updSld(el,vId,unit){
+    const v=document.getElementById(vId);
+    if(v)v.textContent=el.value+' '+unit;
+}
+function act(id,val){
+    if(typeof requestAction!=='undefined')requestAction(id,val);
+    else console.log('RequestAction:',id,val);
+}
 
-            // Right Panel (KI & Logs)
-            document.getElementById('valAiResponse').innerHTML = (payload.AiResponse || 'Keine Antwort').replace(/\n/g, '<br>');
-            
-            // Format LogInfo (Assuming it might be a raw HTML string from Symcon's HTML Box)
-            const logFeed = document.getElementById('logFeed');
-            if (payload.LogInfo && payload.LogInfo.trim() !== '') {
-                logFeed.innerHTML = payload.LogInfo; // Falls der User eine fertige HTMLBox übergibt
-            } else {
-                logFeed.innerHTML = '<div class="log-time" style="padding:10px;">Keine Logs verfügbar</div>';
-            }
-
-        } catch (e) {
-            console.error("Error parsing data:", e);
-        }
-    }
-
-    function sendAction(ident, value) {
-        if (typeof requestAction !== 'undefined') {
-            requestAction(ident, value);
-        } else {
-            console.log("Mock RequestAction:", ident, value);
-        }
-    }
-
-    // Für Initialisierung
-    if (typeof requestAction !== 'undefined') {
-        requestAction('Init', 0);
-    }
+if(typeof requestAction!=='undefined')requestAction('Init',0);
 </script>
 </body>
 </html>
