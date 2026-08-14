@@ -178,6 +178,30 @@ input[type=range]::-moz-range-thumb{height:16px;width:16px;border-radius:50%;bac
 .gauge-value.hot{fill:var(--pink)}
 .gauge-label{font-size:.7rem;fill:var(--text-dim);text-anchor:middle}
 .gauge-tick{fill:var(--text-dim);font-size:.55rem;text-anchor:middle}
+
+/* ═══ WATER TANK ═══ */
+.water-tank{
+    width:90px;height:90px;border-radius:50%;
+    border:2px solid rgba(255,255,255,0.08);
+    box-shadow:0 0 15px rgba(0,212,255,0.15),inset 0 0 15px rgba(0,212,255,0.1);
+    position:relative;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    margin-left:15px;background:rgba(0,0,0,0.3);
+}
+.water-wave{
+    position:absolute;top:100%;left:-50%;width:200%;height:200%;
+    background:var(--cyan);opacity:0.8;border-radius:40%;
+    animation:wave 4s linear infinite;
+    transition:top 1.5s cubic-bezier(.4,0,.2,1);z-index:1;
+}
+.water-wave::before{
+    content:'';position:absolute;top:-10px;left:0;width:100%;height:100%;
+    background:var(--cyan);opacity:0.4;border-radius:42%;
+    animation:wave 6s linear infinite;
+}
+@keyframes wave{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.water-text{position:relative;z-index:2;font-size:1.15rem;font-weight:700;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.8)}
+.water-label{position:relative;z-index:2;font-size:0.6rem;color:rgba(255,255,255,0.9);text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.8);margin-top:2px}
 </style>
 </head>
 <body>
@@ -207,6 +231,12 @@ input[type=range]::-moz-range-thumb{height:16px;width:16px;border-radius:50%;bac
                 <text id="gaugeVal" class="gauge-value" x="80" y="75">0,00</text>
                 <text class="gauge-label" x="80" y="92">l/min</text>
             </svg>
+            <!-- Water Tank -->
+            <div class="water-tank" id="waterTank">
+                <div class="water-wave" id="waterWave"></div>
+                <div class="water-text" id="waterVal">0 L</div>
+                <div class="water-label" id="waterLbl">Bereit</div>
+            </div>
         </div>
     </div>
 
@@ -314,14 +344,43 @@ function handleMessage(raw){
         const statusEl=document.getElementById('valStatus');
         statusEl.innerHTML=d.SummaryStatus||'Bereit';
 
-        // Watering badge
+        // Watering badge and Tank calc
         const badge=document.getElementById('waterBadge');
+        const tankW=document.getElementById('waterWave');
+        const tankV=document.getElementById('waterVal');
+        const tankL=document.getElementById('waterLbl');
+
         if(d.WateringActive){
             badge.className='watering-badge active';badge.textContent='Bewässert';
             document.getElementById('panelStatus').classList.add('sprinkler-active');
+
+            // Parse progress and remaining time from SummaryStatus HTML
+            let prog = 0, remMin = 0;
+            if(d.SummaryStatus){
+                const pM = d.SummaryStatus.match(/(\d+)%/);
+                if(pM) prog = parseInt(pM[1]);
+                const mM = d.SummaryStatus.match(/Verbleibend:.*?(\d+):/);
+                if(mM) remMin = parseInt(mM[1]);
+            }
+            if(prog > 0 && remMin > 0 && d.FlowRateRaw > 0){
+                const elapMin = remMin / (1 - (prog/100)) * (prog/100);
+                const totMin = remMin + elapMin;
+                const cVol = Math.round(elapMin * d.FlowRateRaw);
+                const tVol = Math.round(totMin * d.FlowRateRaw);
+                tankW.style.top = (100 - prog) + '%';
+                tankV.textContent = cVol + ' L';
+                tankL.textContent = 'von ' + tVol + ' L';
+            } else if (d.FlowRateRaw > 0) {
+                tankW.style.top = '50%';
+                tankV.textContent = '~ L';
+                tankL.textContent = 'Berechne...';
+            }
         }else{
             badge.className='watering-badge inactive';badge.textContent='Inaktiv';
             document.getElementById('panelStatus').classList.remove('sprinkler-active');
+            tankW.style.top = '100%';
+            tankV.textContent = '0 L';
+            tankL.textContent = 'Bereit';
         }
 
         // Data values — Flow Gauge
