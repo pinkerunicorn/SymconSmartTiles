@@ -406,7 +406,7 @@ function updateGauge(flowRate){
     arc.setAttribute('stroke-dashoffset',offset);
 
     // Color: cyan at low, pink at high
-    const isHot=flowRate>10;
+    const isHot=flowRate>=9;
     if(isHot){
         arc.setAttribute('stroke','var(--pink)');
         arc.classList.add('hot');
