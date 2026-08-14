@@ -210,8 +210,6 @@ class SmartIrrigationKachel extends IPSModuleStrict
         $payload['AutomaticActive'] = (bool)$this->readSlaiValue($slaiId, 'AutomaticActive', false);
         $payload['SperrzeitActive'] = (bool)$this->readSlaiValue($slaiId, 'SperrzeitActive', false);
         $payload['ForceStart'] = (bool)$this->readSlaiValue($slaiId, 'ForceStart', false);
-
-        $payload['SickerpauseMinuten'] = (int)$this->readSlaiValue($slaiId, 'SickerpauseMinuten', 0);
         $payload['TriggerFeuchte'] = (float)$this->readSlaiValue($slaiId, 'DefaultStartSchwellwert', 0);
         $payload['ZielFeuchte'] = (float)$this->readSlaiValue($slaiId, 'DefaultZielFeuchte', 0);
         $payload['MaxDuration'] = (int)$this->readSlaiValue($slaiId, 'GlobalMaxDuration', 0);

@@ -292,10 +292,6 @@ input[type=range]::-moz-range-thumb{height:16px;width:16px;border-radius:50%;bac
 
             <!-- Sliders -->
             <div class="sld-wrap">
-                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Sickerpause</div>
-                <div class="sld-row"><input type="range" id="sldSoak" min="0" max="180" step="5" oninput="updSld(this,'valSoak','Min')" onchange="act('Action_SickerpauseMinuten',+this.value)"><span class="sld-val" id="valSoak">0 Min</span></div>
-            </div>
-            <div class="sld-wrap">
                 <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Trigger Feuchte</div>
                 <div class="sld-row"><input type="range" id="sldTrigger" min="0" max="100" step="5" oninput="updSld(this,'valTrigger','%')" onchange="act('Action_DefaultStartSchwellwert',+this.value)"><span class="sld-val" id="valTrigger">0%</span></div>
             </div>
@@ -434,7 +430,6 @@ function handleMessage(raw){
         document.getElementById('chkForce').checked=!!d.ForceStart;
 
         // Sliders
-        setSld('sldSoak','valSoak',d.SickerpauseMinuten||0,'Min');
         setSld('sldTrigger','valTrigger',d.TriggerFeuchte||0,'%');
         setSld('sldTarget','valTarget',d.ZielFeuchte||0,'%');
         setSld('sldMax','valMax',d.MaxDuration||0,'Min');
