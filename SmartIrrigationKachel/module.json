@@ -1,0 +1,16 @@
+{
+    "id": "{27698EA0-4AC1-487F-83E2-61846063E447}",
+    "name": "SmartIrrigationKachel",
+    "type": 3,
+    "vendor": "Florian Graßinger",
+    "aliases": [
+        "SmartIrrigationKachel"
+    ],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [
+        "{018EF6B5-AB94-40C6-AA53-46943E824BD0}"
+    ],
+    "prefix": "IRRTILE",
+    "url": "https://github.com/pinkerunicorn/SymconSmartTiles"
+}
