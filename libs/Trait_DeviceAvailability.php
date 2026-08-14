@@ -42,47 +42,12 @@ if (!trait_exists('DeviceAvailability_Trait')) {
          */
         private function DA_RegisterAvailability(int $position = 900): void
         {
-            $options = json_encode([
-                [
-                    'Value'               => false,
-                    'Caption'             => 'Offline',
-                    'IconValue'           => 'NetworkDisconnected',
-                    'IconActive'          => true,
-                    'ColorActive'         => true,
-                    'ColorDisplay'        => 0xFF4444,
-                    'ContentColorActive'  => false,
-                    'ContentColorDisplay' => -1,
-                    'ContentColorValue'   => -1,
-                    'ColorValue'          => 0xFF4444
-                ],
-                [
-                    'Value'               => true,
-                    'Caption'             => 'Online',
-                    'IconValue'           => 'Network',
-                    'IconActive'          => true,
-                    'ColorActive'         => true,
-                    'ColorDisplay'        => 0x00CC44,
-                    'ContentColorActive'  => false,
-                    'ContentColorDisplay' => -1,
-                    'ContentColorValue'   => -1,
-                    'ColorValue'          => 0x00CC44
-                ]
-            ]);
-
-            $this->RegisterVariableBoolean('DeviceAvailable', 'Gerätestatus', [
-                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
-                'ICON'         => 'Network',
-                'OPTIONS'      => $options
-            ], $position);
-
             // Property für Alarm-Priorität (0=Low, 1=Medium, 2=High, -1=kein Alarm)
-            // RegisterPropertyInteger ist idempotent in Symcon – kein Existenz-Check nötig
+            // RegisterPropertyInteger darf nur in Create() aufgerufen werden!
             $this->RegisterPropertyInteger('AvailabilityAlarmPriority', 1);
-
-            // Set initial state to true (Online) on creation so newly created variables don't falsely trigger offline alarms
-            if ($this->GetValue('DeviceAvailable') === false && time() - IPS_GetVariable($this->GetIDForIdent('DeviceAvailable'))['VariableUpdated'] > 31536000) {
-                $this->SetValue('DeviceAvailable', true);
-            }
+            
+            // Variablen-Registrierung auch hier aufrufen, damit sie bei Neu-Erstellung sofort da ist
+            $this->DA_ApplyPresentation($position);
         }
 
         /**
@@ -106,7 +71,11 @@ if (!trait_exists('DeviceAvailability_Trait')) {
          */
         private function DA_SetAvailable(bool $available, string $reason = ''): void
         {
-            $wasAvailable = (bool)@$this->GetValue('DeviceAvailable');
+            if (!@$this->GetIDForIdent('DeviceAvailable')) {
+                return; // Variable wurde noch nicht registriert
+            }
+            
+            $wasAvailable = (bool)$this->GetValue('DeviceAvailable');
 
             // Nur reagieren wenn sich der Status ändert
             if ($wasAvailable === $available) {
@@ -190,14 +159,46 @@ if (!trait_exists('DeviceAvailability_Trait')) {
         // CustomPresentation
         // -------------------------------------------------------------------
 
-        /**
-         * Veraltet: In Symcon 8 muss das Profil direkt bei der Erstellung übergeben werden.
-         * Die Logik wurde in DA_RegisterAvailability verschoben.
-         * Dummy-Methode zur Abwärtskompatibilität, damit alte module.php nicht sofort brechen.
-         */
-        private function DA_ApplyPresentation(): void
+        private function DA_ApplyPresentation(int $position = 900): void
         {
-            // Do nothing
+            $options = json_encode([
+                [
+                    'Value'               => false,
+                    'Caption'             => 'Offline',
+                    'IconValue'           => 'NetworkDisconnected',
+                    'IconActive'          => true,
+                    'ColorActive'         => true,
+                    'ColorDisplay'        => 0xFF4444,
+                    'ContentColorActive'  => false,
+                    'ContentColorDisplay' => -1,
+                    'ContentColorValue'   => -1,
+                    'ColorValue'          => 0xFF4444
+                ],
+                [
+                    'Value'               => true,
+                    'Caption'             => 'Online',
+                    'IconValue'           => 'Network',
+                    'IconActive'          => true,
+                    'ColorActive'         => true,
+                    'ColorDisplay'        => 0x00CC44,
+                    'ContentColorActive'  => false,
+                    'ContentColorDisplay' => -1,
+                    'ContentColorValue'   => -1,
+                    'ColorValue'          => 0x00CC44
+                ]
+            ]);
+
+            // Wird in ApplyChanges() aufgerufen, damit bestehende Instanzen die Variable nach einem Update erhalten
+            $this->RegisterVariableBoolean('DeviceAvailable', 'Gerätestatus', [
+                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                'ICON'         => 'Network',
+                'OPTIONS'      => $options
+            ], $position);
+
+            // Set initial state to true (Online) on creation so newly created variables don't falsely trigger offline alarms
+            if ($this->GetValue('DeviceAvailable') === false && time() - IPS_GetVariable($this->GetIDForIdent('DeviceAvailable'))['VariableUpdated'] > 31536000) {
+                $this->SetValue('DeviceAvailable', true);
+            }
         }
     }
 }
