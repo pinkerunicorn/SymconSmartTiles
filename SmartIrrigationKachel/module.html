@@ -348,9 +348,27 @@ function handleMessage(raw){
         const tankV=document.getElementById('waterVal');
         const tankL=document.getElementById('waterLbl');
 
-        if(d.WateringActive){
-            badge.className='watering-badge active';badge.textContent='Bewässert';
-            document.getElementById('panelStatus').classList.add('sprinkler-active');
+        let isCycleActive = d.WateringActive;
+        let isSickerpause = false;
+        if(d.SummaryStatus && (d.SummaryStatus.includes('%') || d.SummaryStatus.includes('Sickerpause') || d.SummaryStatus.includes('Wartet'))) {
+            isCycleActive = true;
+            if(d.SummaryStatus.includes('Sickerpause')) isSickerpause = true;
+        }
+
+        if(isCycleActive){
+            if(isSickerpause){
+                badge.className='watering-badge active';badge.textContent='Sickerpause';
+                badge.style.background='rgba(255,152,0,0.15)';badge.style.color='var(--orange)';badge.style.border='1px solid rgba(255,152,0,0.3)';
+                document.getElementById('panelStatus').classList.remove('sprinkler-active');
+            } else if (d.WateringActive) {
+                badge.className='watering-badge active';badge.textContent='Bewässert';
+                badge.style.background='';badge.style.color='';badge.style.border='';
+                document.getElementById('panelStatus').classList.add('sprinkler-active');
+            } else {
+                badge.className='watering-badge active';badge.textContent='Geplant';
+                badge.style.background='';badge.style.color='';badge.style.border='';
+                document.getElementById('panelStatus').classList.remove('sprinkler-active');
+            }
 
             // Parse progress and remaining time from SummaryStatus HTML
             let prog = 0, remMin = 0;
@@ -368,13 +386,14 @@ function handleMessage(raw){
                 tankW.style.top = (100 - prog) + '%';
                 tankV.textContent = cVol + ' L';
                 tankL.textContent = 'von ' + tVol + ' L';
-            } else if (d.FlowRateRaw > 0) {
+            } else if (d.FlowRateRaw > 0 || isSickerpause) {
                 tankW.style.top = '50%';
                 tankV.textContent = '~ L';
                 tankL.textContent = 'Berechne...';
             }
         }else{
             badge.className='watering-badge inactive';badge.textContent='Inaktiv';
+            badge.style.background='';badge.style.color='';badge.style.border='';
             document.getElementById('panelStatus').classList.remove('sprinkler-active');
             tankW.style.top = '100%';
             tankV.textContent = '0 L';
