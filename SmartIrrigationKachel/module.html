@@ -219,11 +219,11 @@ input[type=range]::-moz-range-thumb{height:16px;width:16px;border-radius:50%;bac
         </div>
         <div class="top-gauge">
             <svg class="gauge-svg" viewBox="0 0 160 95">
-                <text class="gauge-tick" x="18" y="82">0</text>
-                <text class="gauge-tick" x="38" y="42">3</text>
-                <text class="gauge-tick" x="80" y="22">6</text>
-                <text class="gauge-tick" x="122" y="42">9</text>
-                <text class="gauge-tick" x="142" y="82">12</text>
+                <text class="gauge-tick" id="gt0" x="18" y="82">0</text>
+                <text class="gauge-tick" id="gt1" x="38" y="42">3</text>
+                <text class="gauge-tick" id="gt2" x="80" y="22">6</text>
+                <text class="gauge-tick" id="gt3" x="122" y="42">9</text>
+                <text class="gauge-tick" id="gt4" x="142" y="82">12</text>
                 <path class="gauge-bg" d="M 20 80 A 60 60 0 0 1 140 80"/>
                 <path id="gaugeArc" class="gauge-fill" d="M 20 80 A 60 60 0 0 1 140 80" stroke-dasharray="188.5" stroke-dashoffset="188.5" stroke="var(--cyan)"/>
                 <polygon id="gaugeNeedle" class="gauge-needle" points="80,30 77,78 83,78"/>
@@ -454,18 +454,28 @@ function act(id,val){
     else console.log('RequestAction:',id,val);
 }
 
+let currentGaugeMax = 12;
+
 function updateGauge(flowRate){
-    const maxFlow=12; // l/min max scale
+    // Self-calibration: if flow approaches max, increase scale (multiples of 4 for clean ticks)
+    if (flowRate > currentGaugeMax * 0.95) {
+        currentGaugeMax = Math.max(12, Math.ceil((flowRate * 1.1) / 4) * 4);
+        document.getElementById('gt1').textContent = currentGaugeMax * 0.25;
+        document.getElementById('gt2').textContent = currentGaugeMax * 0.5;
+        document.getElementById('gt3').textContent = currentGaugeMax * 0.75;
+        document.getElementById('gt4').textContent = currentGaugeMax;
+    }
+
     const arcLen=188.5; // half-circle arc length
-    const pct=Math.min(1,Math.max(0,flowRate/maxFlow));
+    const pct=Math.min(1,Math.max(0,flowRate/currentGaugeMax));
     const offset=arcLen*(1-pct);
 
     // Arc fill
     const arc=document.getElementById('gaugeArc');
     arc.setAttribute('stroke-dashoffset',offset);
 
-    // Color: cyan at low, pink at high
-    const isHot=flowRate>=9;
+    // Color: cyan at low, pink at high (dynamically set to 75% of scale)
+    const isHot=flowRate >= (currentGaugeMax * 0.75);
     if(isHot){
         arc.setAttribute('stroke','var(--pink)');
         arc.classList.add('hot');
