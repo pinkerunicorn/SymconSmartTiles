@@ -44,7 +44,9 @@ body{padding:14px}
     box-shadow:0 8px 40px rgba(0,0,0,0.5),0 0 20px var(--pink-g);
     border-color:rgba(255,71,133,0.15);
 }
-.row-top{grid-column:1/-1}
+.row-top{grid-column:1/-1;flex-direction:row;gap:20px;align-items:stretch}
+.top-status{flex:1;display:flex;flex-direction:column;min-width:0}
+.top-gauge{flex:0 0 auto;display:flex;align-items:center;justify-content:center}
 .col-r{grid-column:3;display:flex;flex-direction:column;gap:14px}
 
 /* ═══ PANEL HEADER ═══ */
@@ -183,12 +185,29 @@ input[type=range]::-moz-range-thumb{height:16px;width:16px;border-radius:50%;bac
 
     <!-- ═══ TOP: STATUS ═══ -->
     <div class="p row-top" id="panelStatus">
-        <div class="ph">
-            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            Meldung
-            <span style="margin-left:auto" id="waterBadge" class="watering-badge inactive">Inaktiv</span>
+        <div class="top-status">
+            <div class="ph">
+                <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Meldung
+                <span style="margin-left:auto" id="waterBadge" class="watering-badge inactive">Inaktiv</span>
+            </div>
+            <div class="status-html" id="valStatus">Warte auf Daten...</div>
         </div>
-        <div class="status-html" id="valStatus">Warte auf Daten...</div>
+        <div class="top-gauge">
+            <svg class="gauge-svg" viewBox="0 0 160 95">
+                <text class="gauge-tick" x="18" y="82">0</text>
+                <text class="gauge-tick" x="38" y="42">5</text>
+                <text class="gauge-tick" x="80" y="22">10</text>
+                <text class="gauge-tick" x="122" y="42">15</text>
+                <text class="gauge-tick" x="142" y="82">20</text>
+                <path class="gauge-bg" d="M 20 80 A 60 60 0 0 1 140 80"/>
+                <path id="gaugeArc" class="gauge-fill" d="M 20 80 A 60 60 0 0 1 140 80" stroke-dasharray="188.5" stroke-dashoffset="188.5" stroke="var(--cyan)"/>
+                <polygon id="gaugeNeedle" class="gauge-needle" points="80,30 77,78 83,78"/>
+                <circle class="gauge-center" cx="80" cy="80" r="6"/>
+                <text id="gaugeVal" class="gauge-value" x="80" y="75">0,00</text>
+                <text class="gauge-label" x="80" y="92">l/min</text>
+            </svg>
+        </div>
     </div>
 
     <!-- ═══ LEFT: SMARTLAWNAI DATA ═══ -->
@@ -198,28 +217,6 @@ input[type=range]::-moz-range-thumb{height:16px;width:16px;border-radius:50%;bac
             SmartLawnAI
         </div>
         <div class="dl">
-            <!-- Flow Gauge -->
-            <div class="gauge-wrap">
-                <svg class="gauge-svg" viewBox="0 0 160 95">
-                    <!-- Tick marks -->
-                    <text class="gauge-tick" x="18" y="82">0</text>
-                    <text class="gauge-tick" x="38" y="42">5</text>
-                    <text class="gauge-tick" x="80" y="22">10</text>
-                    <text class="gauge-tick" x="122" y="42">15</text>
-                    <text class="gauge-tick" x="142" y="82">20</text>
-                    <!-- Background arc -->
-                    <path class="gauge-bg" d="M 20 80 A 60 60 0 0 1 140 80"/>
-                    <!-- Filled arc -->
-                    <path id="gaugeArc" class="gauge-fill" d="M 20 80 A 60 60 0 0 1 140 80" stroke-dasharray="188.5" stroke-dashoffset="188.5" stroke="var(--cyan)"/>
-                    <!-- Needle -->
-                    <polygon id="gaugeNeedle" class="gauge-needle" points="80,30 77,78 83,78"/>
-                    <!-- Center dot -->
-                    <circle class="gauge-center" cx="80" cy="80" r="6"/>
-                    <!-- Value -->
-                    <text id="gaugeVal" class="gauge-value" x="80" y="75">0,00</text>
-                    <text class="gauge-label" x="80" y="92">l/min</text>
-                </svg>
-            </div>
             <div class="di"><div class="dl-lbl"><svg viewBox="0 0 24 24"><path d="M20 16.58A5 5 0 0018 7h-1.26A8 8 0 104 15.25"/></svg>Regen Heute</div><div class="dl-val" id="valRainT">-</div></div>
             <div class="di"><div class="dl-lbl"><svg viewBox="0 0 24 24"><path d="M20 16.58A5 5 0 0018 7h-1.26A8 8 0 104 15.25"/></svg>Regen Morgen</div><div class="dl-val" id="valRainM">-</div></div>
             <div class="di"><div class="dl-lbl"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Heute</div><div class="dl-val" id="valToday">-</div></div>
