@@ -3,14 +3,17 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../libs/Trait_SmartLog.php';
+require_once __DIR__ . '/../libs/Trait_DeviceAvailability.php';
 
 class HausgeraeteKachel extends IPSModuleStrict
 {
     use SmartLog_Trait;
+    use DeviceAvailability_Trait;
 
     public function Create(): void
     {
         parent::Create();
+        $this->DA_RegisterAvailability(900);
         $this->SetVisualizationType(1);
         $this->RegisterPropertyString('Appliances', '[]');
     }
@@ -18,6 +21,7 @@ class HausgeraeteKachel extends IPSModuleStrict
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+        $this->DA_ApplyPresentation();
 
         foreach ($this->GetMessageList() as $senderID => $messages) {
             foreach ($messages as $message) {
@@ -72,6 +76,7 @@ class HausgeraeteKachel extends IPSModuleStrict
     {
         $data = $this->CollectCurrentData();
         $this->UpdateVisualizationValue(json_encode($data, JSON_UNESCAPED_UNICODE));
+        $this->DA_SetAvailable(true);
     }
 
     private function CollectCurrentData(): array

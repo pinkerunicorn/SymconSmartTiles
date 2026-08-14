@@ -2,11 +2,15 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../libs/Trait_DeviceAvailability.php';
+
 class EnergieverteilungKachel extends IPSModuleStrict
 {
+    use DeviceAvailability_Trait;
     public function Create(): void
     {
         parent::Create();
+        $this->DA_RegisterAvailability(900);
 
         // Aktiviert das HTML-SDK für native Kachel-Visualisierung
         $this->SetVisualizationType(1);
@@ -23,6 +27,7 @@ class EnergieverteilungKachel extends IPSModuleStrict
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+        $this->DA_ApplyPresentation();
 
         // Alle alten Message-Registrierungen entfernen
         foreach ($this->GetMessageList() as $senderID => $messages) {
@@ -95,6 +100,7 @@ class EnergieverteilungKachel extends IPSModuleStrict
     {
         $data = $this->CollectCurrentData();
         $this->UpdateVisualizationValue(json_encode($data, JSON_UNESCAPED_UNICODE));
+        $this->DA_SetAvailable(true);
     }
 
     private function CollectCurrentData(): array

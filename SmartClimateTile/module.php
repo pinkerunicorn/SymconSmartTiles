@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../libs/Trait_SmartLog.php';
+require_once __DIR__ . '/../libs/Trait_DeviceAvailability.php';
 
 /**
  * SmartClimateTile – Interaktives HTML-SDK Klimaregler-Widget fuer IP-Symcon 9.
@@ -15,6 +16,7 @@ require_once __DIR__ . '/../libs/Trait_SmartLog.php';
 class KlimaKachel extends IPSModuleStrict
 {
     use SmartLog_Trait;
+    use DeviceAvailability_Trait;
 
     // =======================================================================
     // Modul-Lifecycle
@@ -23,6 +25,7 @@ class KlimaKachel extends IPSModuleStrict
     public function Create(): void
     {
         parent::Create();
+        $this->DA_RegisterAvailability(900);
 
         // HTML-SDK Tile Visualization aktivieren
         $this->SetVisualizationType(1);
@@ -50,6 +53,7 @@ class KlimaKachel extends IPSModuleStrict
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+        $this->DA_ApplyPresentation();
 
         // Alle bisherigen Message-Registrierungen entfernen
         $messageList = $this->GetMessageList();
@@ -132,6 +136,7 @@ class KlimaKachel extends IPSModuleStrict
     {
         $data = $this->GetTileData();
         $this->UpdateVisualizationValue(json_encode($data, JSON_UNESCAPED_UNICODE));
+        $this->DA_SetAvailable(true);
     }
 
     /**
