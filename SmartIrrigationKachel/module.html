@@ -81,8 +81,8 @@ body{padding:20px;display:flex;flex-direction:column;gap:30px;align-items:center
     animation:wave 6s linear infinite;
 }
 @keyframes wave{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-.water-text{position:relative;z-index:2;font-size:17cqw;font-weight:700;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.8)}
-.water-label{position:relative;z-index:2;font-size:9cqw;color:rgba(255,255,255,0.9);text-transform:uppercase;text-shadow:0 1px 4px rgba(0,0,0,0.8);margin-top:2px}
+.water-text{position:relative;z-index:2;font-size:clamp(16px, 17cqw, 24px);font-weight:700;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.8)}
+.water-label{position:relative;z-index:2;font-size:clamp(8px, 9cqw, 12px);color:rgba(255,255,255,0.9);text-transform:uppercase;text-shadow:0 1px 4px rgba(0,0,0,0.8);margin-top:2px}
 
 /* ═══ MOISTURE GAUGE (RING) ═══ */
 .m-container{position:relative;width:100%;max-width:120px;aspect-ratio:1/1;margin-top:5px;container-type:inline-size;}
@@ -92,9 +92,9 @@ body{padding:20px;display:flex;flex-direction:column;gap:30px;align-items:center
 .m-fill.triggered{stroke:var(--blue);filter:drop-shadow(0 0 12px var(--blue-g))}
 .m-trigger-line{stroke:rgba(255,255,255,0.8);stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 2px #000)}
 .m-text-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
-.m-val{font-size:24cqw;font-weight:700;color:var(--green);transition:color .5s;text-shadow:0 0 10px var(--green-g)}
+.m-val{font-size:clamp(18px, 24cqw, 30px);font-weight:700;color:var(--green);transition:color .5s;text-shadow:0 0 10px var(--green-g)}
 .m-val.triggered{color:var(--blue);text-shadow:0 0 15px var(--blue-g)}
-.m-unit{font-size:12cqw;color:var(--text-dim);font-weight:600;text-transform:uppercase;margin-top:-2px}
+.m-unit{font-size:clamp(8px, 12cqw, 14px);color:var(--text-dim);font-weight:600;text-transform:uppercase;margin-top:-2px}
 
 </style>
 </head>
