@@ -86,13 +86,13 @@
         
         @keyframes subtle-rock {
             0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-8deg); }
-            75% { transform: rotate(8deg); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
         }
 
         .card.active .header svg {
             fill: var(--accent);
-            animation: subtle-rock 2.5s ease-in-out infinite;
+            animation: subtle-rock 1.5s ease-in-out infinite;
             transform-origin: center;
             transform-box: fill-box;
         }
@@ -144,7 +144,7 @@
         }
 
         .card.active .progress-bar {
-            filter: drop-shadow(0 0 6px rgba(255, 71, 133, 0.9));
+            filter: drop-shadow(0 0 8px var(--accent)) drop-shadow(0 0 12px var(--accent));
         }
 
         .card:not(.active) .progress-bar {
