@@ -118,8 +118,9 @@ html, body {
 
 .shield-container {
     position: relative;
-    width: 140px;
-    height: 140px;
+    width: 100%;
+    max-width: 140px;
+    aspect-ratio: 1 / 1;
     border-radius: 50%;
     background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
     box-shadow: 
@@ -130,11 +131,12 @@ html, body {
     align-items: center;
     justify-content: center;
     transition: all 0.5s ease;
+    container-type: inline-size;
 }
 
 .shield-container svg {
-    width: 60px;
-    height: 60px;
+    width: 45cqw;
+    height: auto;
     color: var(--content-color);
     opacity: 0.5;
     transition: all 0.5s ease;

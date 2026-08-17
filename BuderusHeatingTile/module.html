@@ -134,8 +134,9 @@ html, body {
 
 .thermostat-dial {
     position: relative;
-    width: 140px;
-    height: 140px;
+    width: 100%;
+    max-width: 140px;
+    aspect-ratio: 1 / 1;
     border-radius: 50%;
     background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
     box-shadow: 
@@ -148,6 +149,7 @@ html, body {
     justify-content: center;
     flex-shrink: 0;
     transition: box-shadow 0.5s ease;
+    container-type: inline-size;
 }
 
 .thermostat-dial.active {
@@ -158,14 +160,14 @@ html, body {
 }
 
 .dial-value {
-    font-size: 32px;
+    font-size: 25cqw;
     font-weight: 300;
     line-height: 1;
-    margin-bottom: 2px;
+    margin-bottom: 2%;
 }
-.dial-unit { font-size: 16px; opacity: 0.5; }
+.dial-unit { font-size: 12cqw; opacity: 0.5; }
 .dial-label {
-    font-size: 10px;
+    font-size: 8cqw;
     text-transform: uppercase;
     letter-spacing: 1px;
     opacity: 0.5;

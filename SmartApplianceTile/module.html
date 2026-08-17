@@ -109,8 +109,9 @@
         /* Circular Progress */
         .progress-container {
             position: relative;
-            width: 120px;
-            height: 120px;
+            width: 100%;
+            max-width: 120px;
+            aspect-ratio: 1 / 1;
             margin-bottom: 20px;
             border-radius: 50%;
             background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
@@ -120,6 +121,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            container-type: inline-size;
         }
 
         .progress-svg {
@@ -148,7 +150,8 @@
         }
 
         .card:not(.active) .progress-bar {
-            stroke: #555;
+            stroke: var(--text-muted);
+            opacity: 0.3;
         }
 
         .progress-spinner {
@@ -175,23 +178,24 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .time-value {
-            font-size: 1.5rem;
+            font-size: 20cqw;
             font-weight: 700;
             line-height: 1;
-            margin-bottom: 2px;
         }
-        
+
         .time-value.done {
-            font-size: 1.2rem;
+            font-size: 16cqw;
             color: var(--accent); /* Hot Pink */
         }
 
         .time-label {
-            font-size: 0.75rem;
+            font-size: 8cqw;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
