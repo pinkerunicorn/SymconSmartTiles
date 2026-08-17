@@ -13,6 +13,12 @@
             "options": []
         }
     ],
-    "actions": [],
+    "actions": [
+        {
+            "type": "Button",
+            "caption": "Update / Aktualisieren",
+            "onClick": "SECKACHEL_UpdateData($id);"
+        }
+    ],
     "status": []
 }

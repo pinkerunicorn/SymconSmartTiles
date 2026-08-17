@@ -76,6 +76,8 @@ class SecurityKachel extends IPSModuleStrict
                 
                 $allDevices = array_merge($contacts, $motions);
                 foreach ($allDevices as $device) {
+                    if (!empty($device['ExcludeFromAlarm'])) continue;
+                    
                     $varId = 0;
                     if (!empty($device['OpenClose_VarID'])) $varId = (int)$device['OpenClose_VarID'];
                     else if (!empty($device['Status_VarID'])) $varId = (int)$device['Status_VarID'];
@@ -89,7 +91,7 @@ class SecurityKachel extends IPSModuleStrict
         }
     }
 
-    private function UpdateData(): void
+    public function UpdateData(): void
     {
         $payload = [
             'presenceMode' => 0, 
@@ -121,6 +123,8 @@ class SecurityKachel extends IPSModuleStrict
         if ($drId > 0 && IPS_InstanceExists($drId) && function_exists('SDR_GetDevicesByType')) {
             $contacts = SDR_GetDevicesByType($drId, 'DevicesContactSensor');
             foreach ($contacts as $contact) {
+                if (!empty($contact['ExcludeFromAlarm'])) continue;
+
                 $varId = 0;
                 if (!empty($contact['OpenClose_VarID'])) $varId = (int)$contact['OpenClose_VarID'];
                 else if (!empty($contact['Status_VarID'])) $varId = (int)$contact['Status_VarID'];
