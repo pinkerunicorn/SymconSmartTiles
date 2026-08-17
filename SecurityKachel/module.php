@@ -210,6 +210,11 @@ class SecurityKachel extends IPSModuleStrict
             if ($offlineId) $issues += GetValue($offlineId);
             if ($orphanId) $issues += GetValue($orphanId);
             $payload['deviceIssuesCount'] = $issues;
+            
+            $summaryId = @IPS_GetObjectIDByIdent('SummaryText', $smdId);
+            if ($summaryId) {
+                $payload['deviceSummaryText'] = GetValue($summaryId);
+            }
         }
 
         // 4. Fetch from SmartMonitorEvent
@@ -220,6 +225,17 @@ class SecurityKachel extends IPSModuleStrict
             if ($eventsId) {
                 $payload['activeEventsCount'] = GetValue($eventsId);
             }
+            
+            $activeEventsList = [];
+            foreach (IPS_GetChildrenIDs($smeId) as $childId) {
+                $obj = IPS_GetObject($childId);
+                if (str_starts_with($obj['ObjectIdent'], 'Event_')) {
+                    if (GetValue($childId) === true) {
+                        $activeEventsList[] = str_replace('🔔 ', '', IPS_GetName($childId));
+                    }
+                }
+            }
+            $payload['activeEventsList'] = $activeEventsList;
         }
 
         // 5. Fetch from SmartLog
