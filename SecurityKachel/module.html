@@ -183,6 +183,35 @@ html, body {
     100% { transform: scale(1.05); box-shadow: inset 0 0 30px rgba(255,71,133,0.5), 0 0 40px rgba(255,71,133,0.6); }
 }
 
+/* ── BUBBLE ROW ── */
+.bubbles-row {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    width: 100%;
+}
+.bubble-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    max-width: 100px;
+}
+.bubble-label {
+    font-size: 11px;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+    white-space: nowrap;
+}
+.bubble-count {
+    font-size: clamp(24px, 35cqw, 40px);
+    font-weight: 700;
+    line-height: 1;
+}
+
 /* ── SENSOR LISTE (Pills) ── */
 .sensor-list {
     display: flex;
@@ -284,11 +313,35 @@ html, body {
         </div>
 
         <div class="main-area">
-            <div id="shieldContainer" class="shield-container safe">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    <path d="M9 12l2 2 4-4"></path>
-                </svg>
+            <div class="bubbles-row">
+                <!-- Zustand -->
+                <div class="bubble-box">
+                    <div id="shieldContainer" class="shield-container safe">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            <path d="M9 12l2 2 4-4"></path>
+                        </svg>
+                    </div>
+                    <div class="bubble-label">Zustand</div>
+                </div>
+                <!-- Fenster/Türen -->
+                <div class="bubble-box">
+                    <div id="deviceContainer" class="shield-container safe">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3h18v18H3z"></path><path d="M12 3v18"></path>
+                        </svg>
+                    </div>
+                    <div class="bubble-label">Fenster</div>
+                </div>
+                <!-- Bewegung -->
+                <div class="bubble-box">
+                    <div id="eventContainer" class="shield-container safe">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                    </div>
+                    <div class="bubble-label">Bewegung</div>
+                </div>
             </div>
             
             <div id="sensorList" class="sensor-list">
@@ -322,16 +375,21 @@ function handleMessage(data) {
 function render(data) {
     const statusBadge = document.getElementById('statusBadge');
     const shieldContainer = document.getElementById('shieldContainer');
+    const deviceContainer = document.getElementById('deviceContainer');
+    const eventContainer = document.getElementById('eventContainer');
     const sensorList = document.getElementById('sensorList');
     
     // Reset Classes
     statusBadge.className = 'status-badge';
     shieldContainer.className = 'shield-container';
+    deviceContainer.className = 'shield-container';
+    eventContainer.className = 'shield-container';
     
     let isAlarm = data.alarmLevel > 0;
     let openCount = (data.openWindows || []).length;
     let motionCount = (data.activeMotions || []).length;
     
+    // 1. Zustand (Shield)
     if (isAlarm) {
         statusBadge.classList.add('alarm');
         statusBadge.textContent = 'ALARM!';
@@ -347,6 +405,24 @@ function render(data) {
         statusBadge.textContent = 'SICHER';
         shieldContainer.classList.add('safe');
         shieldContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>';
+    }
+
+    // 2. Fenster (Devices)
+    if (openCount > 0) {
+        deviceContainer.classList.add('warn');
+        deviceContainer.innerHTML = `<div class="bubble-count" style="color:var(--warn-yellow)">${openCount}</div>`;
+    } else {
+        deviceContainer.classList.add('safe');
+        deviceContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"></path><path d="M12 3v18"></path></svg>';
+    }
+
+    // 3. Bewegung (Events)
+    if (motionCount > 0) {
+        eventContainer.classList.add('alarm');
+        eventContainer.innerHTML = `<div class="bubble-count" style="color:var(--alarm-red)">${motionCount}</div>`;
+    } else {
+        eventContainer.classList.add('safe');
+        eventContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>';
     }
     
     // Render Sensor Pills
