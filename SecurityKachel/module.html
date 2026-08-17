@@ -406,6 +406,58 @@ function render(data) {
     
     // Render Latest Logs
     sensorList.innerHTML = '';
+    sensorList.style.flexDirection = 'column';
+    sensorList.style.gap = '8px';
+    sensorList.style.alignItems = 'stretch';
+    sensorList.style.width = '100%';
+    sensorList.style.maxWidth = '500px';
+    sensorList.style.margin = '0 auto';
+    
+    if (data.latestLogs && data.latestLogs.length > 0) {
+        data.latestLogs.forEach(log => {
+            let color = 'rgba(255,255,255,0.03)';
+            let textColor = 'var(--content-color)';
+            let borderColor = 'var(--glass-border)';
+            let icon = 'ℹ️';
+            
+            if (log.l === 'ERROR') {
+                color = 'rgba(255, 71, 133, 0.1)';
+                borderColor = 'rgba(255, 71, 133, 0.4)';
+                textColor = 'var(--alarm-red)';
+                icon = '❌';
+            } else if (log.l === 'WARNING') {
+                color = 'rgba(241, 196, 15, 0.1)';
+                borderColor = 'rgba(241, 196, 15, 0.4)';
+                textColor = 'var(--warn-yellow)';
+                icon = '⚠️';
+            } else if (log.l === 'SECURITY') {
+                color = 'rgba(0, 184, 148, 0.1)';
+                borderColor = 'rgba(0, 184, 148, 0.4)';
+                textColor = 'var(--safe-green)';
+                icon = '🛡️';
+            }
+            
+            let timeStr = new Date(log.t * 1000).toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'});
+            
+            sensorList.innerHTML += `
+                <div style="background:${color}; border: 1px solid ${borderColor}; padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 13px;">
+                    <span style="font-size: 16px;">${icon}</span>
+                    <span style="opacity:0.5; font-size: 11px; min-width: 45px;">${timeStr}</span>
+                    <strong style="color:${textColor}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px;">${log.s}</strong>
+                    <span style="color:${textColor}; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;">${log.m}</span>
+                </div>
+            `;
+        });
+    } else {
+        sensorList.innerHTML = `
+            <div style="background:rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-align: center; font-size: 13px; color: var(--content-color); opacity: 0.5;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:block; margin: 0 auto 8px auto; opacity: 0.5;">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Keine aktuellen Ereignisse
+            </div>
+        `;
+    }
 }
 
 function setMode(mode) {
