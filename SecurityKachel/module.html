@@ -324,23 +324,23 @@ html, body {
                     </div>
                     <div class="bubble-label">Zustand</div>
                 </div>
-                <!-- Fenster/Türen -->
+                <!-- Geräte (Smart Monitor) -->
                 <div class="bubble-box">
                     <div id="deviceContainer" class="shield-container safe">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 3h18v18H3z"></path><path d="M12 3v18"></path>
+                            <path d="M4 11v2h16v-2H4zm-2 4v2h20v-2H2zm4-8v2h12V7H6z"></path>
                         </svg>
                     </div>
-                    <div class="bubble-label">Fenster</div>
+                    <div class="bubble-label">Geräte</div>
                 </div>
-                <!-- Bewegung -->
+                <!-- Ereignisse (Smart Monitor) -->
                 <div class="bubble-box">
                     <div id="eventContainer" class="shield-container safe">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                         </svg>
                     </div>
-                    <div class="bubble-label">Bewegung</div>
+                    <div class="bubble-label">Ereignisse</div>
                 </div>
             </div>
             
@@ -389,6 +389,9 @@ function render(data) {
     let openCount = (data.openWindows || []).length;
     let motionCount = (data.activeMotions || []).length;
     
+    let deviceIssues = data.deviceIssuesCount || 0;
+    let events = data.activeEventsCount || 0;
+    
     // 1. Zustand (Shield)
     if (isAlarm) {
         statusBadge.classList.add('alarm');
@@ -407,22 +410,22 @@ function render(data) {
         shieldContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>';
     }
 
-    // 2. Fenster (Devices)
-    if (openCount > 0) {
+    // 2. Geräte (Smart Monitor)
+    if (deviceIssues > 0) {
         deviceContainer.classList.add('warn');
-        deviceContainer.innerHTML = `<div class="bubble-count" style="color:var(--warn-yellow)">${openCount}</div>`;
+        deviceContainer.innerHTML = `<div class="bubble-count" style="color:var(--warn-yellow)">${deviceIssues}</div>`;
     } else {
         deviceContainer.classList.add('safe');
-        deviceContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"></path><path d="M12 3v18"></path></svg>';
+        deviceContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11v2h16v-2H4zm-2 4v2h20v-2H2zm4-8v2h12V7H6z"></path></svg>';
     }
 
-    // 3. Bewegung (Events)
-    if (motionCount > 0) {
+    // 3. Ereignisse (Smart Monitor)
+    if (events > 0) {
         eventContainer.classList.add('alarm');
-        eventContainer.innerHTML = `<div class="bubble-count" style="color:var(--alarm-red)">${motionCount}</div>`;
+        eventContainer.innerHTML = `<div class="bubble-count" style="color:var(--alarm-red)">${events}</div>`;
     } else {
         eventContainer.classList.add('safe');
-        eventContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>';
+        eventContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>';
     }
     
     // Render Sensor Pills

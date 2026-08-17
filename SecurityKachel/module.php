@@ -89,6 +89,24 @@ class SecurityKachel extends IPSModuleStrict
                 }
             }
         }
+
+        // 3. SmartMonitorDevice registrieren
+        $smdIds = IPS_GetInstanceListByModuleID('{4574D58D-2DC0-4E16-92DC-16D9CD27D014}');
+        if (count($smdIds) > 0) {
+            $smdId = $smdIds[0];
+            foreach (['LowBatteryCount', 'OfflineDeviceCount', 'OrphanedVarCount'] as $ident) {
+                $vid = @IPS_GetObjectIDByIdent($ident, $smdId);
+                if ($vid) $this->RegisterMessage($vid, VM_UPDATE);
+            }
+        }
+
+        // 4. SmartMonitorEvent registrieren
+        $smeIds = IPS_GetInstanceListByModuleID('{72F8B3A1-C994-4E60-A54D-B591D8E72C42}');
+        if (count($smeIds) > 0) {
+            $smeId = $smeIds[0];
+            $vid = @IPS_GetObjectIDByIdent('ActiveEventsCount', $smeId);
+            if ($vid) $this->RegisterMessage($vid, VM_UPDATE);
+        }
     }
 
     public function UpdateData(): void
@@ -97,7 +115,9 @@ class SecurityKachel extends IPSModuleStrict
             'presenceMode' => 0, 
             'alarmLevel' => 0,   
             'openWindows' => [],
-            'activeMotions' => []
+            'activeMotions' => [],
+            'deviceIssuesCount' => 0,
+            'activeEventsCount' => 0
         ];
 
         // 1. Fetch from SmartController
@@ -165,6 +185,31 @@ class SecurityKachel extends IPSModuleStrict
                         $payload['activeMotions'][] = $motion['name'] ?? 'Unbekannter Melder';
                     }
                 }
+            }
+        }
+
+        // 3. Fetch from SmartMonitorDevice
+        $smdIds = IPS_GetInstanceListByModuleID('{4574D58D-2DC0-4E16-92DC-16D9CD27D014}');
+        if (count($smdIds) > 0) {
+            $smdId = $smdIds[0];
+            $lowBatId = @IPS_GetObjectIDByIdent('LowBatteryCount', $smdId);
+            $offlineId = @IPS_GetObjectIDByIdent('OfflineDeviceCount', $smdId);
+            $orphanId = @IPS_GetObjectIDByIdent('OrphanedVarCount', $smdId);
+
+            $issues = 0;
+            if ($lowBatId) $issues += GetValue($lowBatId);
+            if ($offlineId) $issues += GetValue($offlineId);
+            if ($orphanId) $issues += GetValue($orphanId);
+            $payload['deviceIssuesCount'] = $issues;
+        }
+
+        // 4. Fetch from SmartMonitorEvent
+        $smeIds = IPS_GetInstanceListByModuleID('{72F8B3A1-C994-4E60-A54D-B591D8E72C42}');
+        if (count($smeIds) > 0) {
+            $smeId = $smeIds[0];
+            $eventsId = @IPS_GetObjectIDByIdent('ActiveEventsCount', $smeId);
+            if ($eventsId) {
+                $payload['activeEventsCount'] = GetValue($eventsId);
             }
         }
 
