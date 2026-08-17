@@ -8,15 +8,12 @@ class SmartIrrigationKachel extends IPSModuleStrict
 {
     use DeviceAvailability_Trait;
 
-    // All SmartLawnAI variable idents we want to monitor
     private const SLAI_IDENTS = [
         'SummaryStatus', 'WateringActive', 'CurrentFlowRate',
         'WaterToday', 'WaterThisWeek', 'WaterThisMonth',
         'ForecastRainToday', 'ForecastRainTomorrow',
-        'LastGeminiResponse', 'IrrigationLog',
-        'DefaultZielFeuchte', 'DefaultStartSchwellwert',
-        'SickerpauseMinuten', 'GlobalMaxDuration',
-        'AutomaticActive', 'ForceStart', 'SperrzeitActive',
+        'IrrigationLog', 'DefaultZielFeuchte', 'DefaultStartSchwellwert',
+        'GlobalMaxDuration', 'AutomaticActive', 'ForceStart', 'SperrzeitActive',
         'DeviceAvailable'
     ];
 
