@@ -107,6 +107,14 @@ class SecurityKachel extends IPSModuleStrict
             $vid = @IPS_GetObjectIDByIdent('ActiveEventsCount', $smeId);
             if ($vid) $this->RegisterMessage($vid, VM_UPDATE);
         }
+
+        // 5. SmartLog registrieren
+        $logIds = IPS_GetInstanceListByModuleID('{E4375147-F095-4B6F-9E06-F3A65EB8B635}');
+        if (count($logIds) > 0) {
+            $logId = $logIds[0];
+            $vid = @IPS_GetObjectIDByIdent('LastEntry', $logId);
+            if ($vid) $this->RegisterMessage($vid, VM_UPDATE);
+        }
     }
 
     public function UpdateData(): void
@@ -117,7 +125,8 @@ class SecurityKachel extends IPSModuleStrict
             'openWindows' => [],
             'activeMotions' => [],
             'deviceIssuesCount' => 0,
-            'activeEventsCount' => 0
+            'activeEventsCount' => 0,
+            'latestLogs' => []
         ];
 
         // 1. Fetch from SmartController
@@ -210,6 +219,18 @@ class SecurityKachel extends IPSModuleStrict
             $eventsId = @IPS_GetObjectIDByIdent('ActiveEventsCount', $smeId);
             if ($eventsId) {
                 $payload['activeEventsCount'] = GetValue($eventsId);
+            }
+        }
+
+        // 5. Fetch from SmartLog
+        $logIds = IPS_GetInstanceListByModuleID('{E4375147-F095-4B6F-9E06-F3A65EB8B635}');
+        if (count($logIds) > 0) {
+            $logId = $logIds[0];
+            if (function_exists('SLOG_leseLogDaten')) {
+                $logs = @SLOG_leseLogDaten($logId);
+                if (is_array($logs)) {
+                    $payload['latestLogs'] = array_slice($logs, 0, 3);
+                }
             }
         }
 
