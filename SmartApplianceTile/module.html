@@ -64,6 +64,11 @@
             box-shadow: 0 4px 25px var(--accent-glow);
         }
 
+        .card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
         .header {
             display: flex;
             align-items: center;
@@ -79,8 +84,16 @@
             transition: fill 0.3s ease;
         }
         
+        @keyframes subtle-rock {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-4deg); }
+            75% { transform: rotate(4deg); }
+        }
+
         .card.active .header svg {
             fill: var(--accent);
+            animation: subtle-rock 3s ease-in-out infinite;
+            transform-origin: center center;
         }
 
         .title {
@@ -125,11 +138,34 @@
             stroke: var(--accent);
             stroke-width: 8;
             stroke-linecap: round;
-            transition: stroke-dashoffset 1s ease-in-out;
+            transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card.active .progress-bar {
+            filter: drop-shadow(0 0 4px rgba(255, 71, 133, 0.5));
         }
 
         .card:not(.active) .progress-bar {
             stroke: #555;
+        }
+
+        .progress-spinner {
+            fill: none;
+            stroke: var(--content-color);
+            stroke-width: 1;
+            stroke-dasharray: 4 8;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            transform-origin: center;
+        }
+
+        @keyframes spin-slow {
+            100% { transform: rotate(360deg); }
+        }
+
+        .card.active .progress-spinner {
+            opacity: 0.15;
+            animation: spin-slow 12s linear infinite;
         }
 
         .time-display {
@@ -237,7 +273,10 @@
                     return;
                 }
 
-                data.appliances.forEach(app => {
+                // If container is empty, build DOM once. Otherwise update in-place for smooth transitions.
+                const isInitialRender = container.children.length === 0 || container.querySelector('.card') === null;
+
+                data.appliances.forEach((app, idx) => {
                     const isActive = app.progress > 0 && app.progress < 100 && app.status !== 'Aus' && app.status !== '';
                     const isDone = app.progress === 100 || app.status === 'Fertig' || app.status === 'Ende';
                     
@@ -270,29 +309,47 @@
                         timeDisplay = '<div class="time-value" style="color: var(--text-muted);">--</div>';
                     }
 
-                    const card = document.createElement('div');
-                    card.className = `card ${activeClass}`;
-                    card.innerHTML = `
-                        <div class="header">
-                            <svg><use href="#icon-${app.icon}"></use></svg>
-                            <h3 class="title">${app.name}</h3>
-                        </div>
-                        <div class="progress-container">
-                            <svg class="progress-svg" viewBox="0 0 120 120">
-                                <circle class="progress-bg" cx="60" cy="60" r="50"></circle>
-                                <circle class="progress-bar" cx="60" cy="60" r="50" 
-                                        stroke-dasharray="${C}" stroke-dashoffset="${offset}"></circle>
-                            </svg>
-                            <div class="time-display">
-                                ${timeDisplay}
+                    if (isInitialRender) {
+                        const card = document.createElement('div');
+                        card.className = `card ${activeClass}`;
+                        card.id = `card-${idx}`;
+                        card.innerHTML = `
+                            <div class="header">
+                                <svg><use href="#icon-${app.icon}"></use></svg>
+                                <h3 class="title">${app.name}</h3>
                             </div>
-                        </div>
-                        <div class="footer">
-                            <div class="status">${app.status || 'Aus'}</div>
-                            <div class="phase">${app.phase || ''}</div>
-                        </div>
-                    `;
-                    container.appendChild(card);
+                            <div class="progress-container">
+                                <svg class="progress-svg" viewBox="0 0 120 120">
+                                    <circle class="progress-spinner" cx="60" cy="60" r="54"></circle>
+                                    <circle class="progress-bg" cx="60" cy="60" r="50"></circle>
+                                    <circle class="progress-bar" cx="60" cy="60" r="50" 
+                                            stroke-dasharray="${C}" stroke-dashoffset="${C}"></circle>
+                                </svg>
+                                <div class="time-display">
+                                    ${timeDisplay}
+                                </div>
+                            </div>
+                            <div class="footer">
+                                <div class="status">${app.status || 'Aus'}</div>
+                                <div class="phase">${app.phase || ''}</div>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                        
+                        // Trigger reflow to ensure the transition plays from offset=C to offset
+                        card.offsetHeight;
+                        card.querySelector('.progress-bar').style.strokeDashoffset = offset;
+                        
+                    } else {
+                        const card = document.getElementById(`card-${idx}`);
+                        if (card) {
+                            card.className = `card ${activeClass}`;
+                            card.querySelector('.time-display').innerHTML = timeDisplay;
+                            card.querySelector('.status').innerText = app.status || 'Aus';
+                            card.querySelector('.phase').innerText = app.phase || '';
+                            card.querySelector('.progress-bar').style.strokeDashoffset = offset;
+                        }
+                    }
                 });
             } catch (e) {
                 console.error("Fehler beim Parsen der Daten", e);
