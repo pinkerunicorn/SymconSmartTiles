@@ -226,10 +226,13 @@ class SecurityKachel extends IPSModuleStrict
         $logIds = IPS_GetInstanceListByModuleID('{E4375147-F095-4B6F-9E06-F3A65EB8B635}');
         if (count($logIds) > 0) {
             $logId = $logIds[0];
-            if (function_exists('SLOG_leseLogDaten')) {
-                $logs = @SLOG_leseLogDaten($logId);
-                if (is_array($logs)) {
-                    $payload['latestLogs'] = array_slice($logs, 0, 3);
+            if (function_exists('SLOG_GetLatestLogs')) {
+                $logsJson = @SLOG_GetLatestLogs($logId, 3);
+                if ($logsJson) {
+                    $logs = json_decode($logsJson, true);
+                    if (is_array($logs)) {
+                        $payload['latestLogs'] = $logs;
+                    }
                 }
             }
         }
