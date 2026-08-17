@@ -8,7 +8,6 @@
 :root{
     --bg:#12121a;
     --panel:rgba(22,22,32,0.85);
-    --panel-border:rgba(255,255,255,0.06);
     --text:#e8e8ec;
     --text-dim:#6e6e7a;
     --pink:#ff4785;
@@ -17,180 +16,57 @@
     --cyan-g:rgba(0,212,255,0.35);
     --green:#00e676;
     --green-g:rgba(0,230,118,0.35);
-    --red:#ff3366;
-    --orange:#ffb703;
-    --purple:#b388ff;
+    --blue:#2979ff;
+    --blue-g:rgba(41,121,255,0.45);
     --font:'Segoe UI',system-ui,-apple-system,sans-serif;
-    --r:14px;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;font-size:14px;-webkit-font-smoothing:antialiased}
-body{padding:14px}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow:hidden;font-size:14px}
+body{padding:20px;display:flex;flex-direction:column;gap:30px;align-items:center}
 
-/* ═══ GRID ═══ */
-.grid{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto 1fr;gap:14px;height:100%}
-@media(max-width:1200px){.grid{grid-template-columns:1fr 1fr}.col-r{grid-column:span 2}}
-@media(max-width:800px){.grid{grid-template-columns:1fr}.col-r,.row-top{grid-column:span 1}}
-
-/* ═══ PANELS ═══ */
-.p{
-    background:var(--panel);border:1px solid var(--panel-border);border-radius:var(--r);
-    padding:18px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-    display:flex;flex-direction:column;
-    box-shadow:0 4px 24px rgba(0,0,0,0.4);
-    transition:transform .35s cubic-bezier(.2,.9,.3,1.2),box-shadow .35s,border-color .35s;
-}
-.p:hover{
-    transform:translateY(-3px) scale(1.005);
-    box-shadow:0 8px 40px rgba(0,0,0,0.5),0 0 20px var(--pink-g);
-    border-color:rgba(255,71,133,0.15);
-}
-.row-top{grid-column:1/-1;flex-direction:row;gap:20px;align-items:stretch}
-.top-status{flex:1;display:flex;flex-direction:column;min-width:0}
-.top-gauge{flex:0 0 auto;display:flex;align-items:center;justify-content:center}
-.col-r{grid-column:3;display:flex;flex-direction:column;gap:14px}
-
-/* ═══ PANEL HEADER ═══ */
-.ph{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-weight:700;font-size:1.05rem;letter-spacing:.4px}
-.ph svg{width:22px;height:22px;fill:none;stroke:var(--cyan);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px var(--cyan-g));transition:filter .3s}
-.p:hover .ph svg{filter:drop-shadow(0 0 10px var(--cyan))}
-
-/* ═══ STATUS BAR (TOP) ═══ */
-.status-html{font-size:.95rem;line-height:1.6;color:var(--text-dim)}
-.status-html *{max-width:100%!important}
-/* Override backend progress bar */
-.status-html > div{background:rgba(255,255,255,0.05)!important;border-radius:12px!important;overflow:hidden;border:1px solid rgba(255,255,255,0.08)!important;height:12px!important;margin-top:8px}
-.status-html > div > div{background:linear-gradient(90deg,var(--cyan),var(--pink))!important;box-shadow:0 0 12px var(--cyan-g)!important;border-radius:12px!important;position:relative;overflow:hidden;height:100%!important}
-.status-html > div > div::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);animation:mShimmer 2.5s infinite;transform:translateX(-100%)}
-
-/* ═══ WATERING INDICATOR ═══ */
-.watering-badge{
-    display:inline-flex;align-items:center;gap:6px;
-    padding:4px 12px;border-radius:20px;font-size:.8rem;font-weight:700;text-transform:uppercase;
+/* ═══ HEADER (STATUS & AUTOMATIK) ═══ */
+.header{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;min-height:50px}
+.status-text{font-size:1.1rem;font-weight:600;color:var(--text);text-shadow:0 0 10px rgba(255,255,255,0.1)}
+.badges{display:flex;gap:10px}
+.badge{
+    padding:4px 14px;border-radius:20px;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+    background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.1);
     transition:all .4s;
 }
-.watering-badge.active{
-    background:rgba(0,212,255,0.15);color:var(--cyan);border:1px solid var(--cyan);
-    box-shadow:0 0 14px var(--cyan-g);
-    animation:neonPulse 2s ease-in-out infinite;
+.badge.active-auto{
+    background:rgba(0,230,118,0.15);color:var(--green);border-color:var(--green);
+    box-shadow:0 0 14px var(--green-g);
 }
-.watering-badge.inactive{background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.08)}
-@keyframes neonPulse{0%,100%{box-shadow:0 0 14px var(--cyan-g)}50%{box-shadow:0 0 25px var(--cyan),0 0 40px var(--cyan-g)}}
-
-/* ═══ DATA LIST ═══ */
-.dl{display:flex;flex-direction:column;gap:2px}
-.di{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:9px 10px;border-radius:8px;
-    transition:background .25s,transform .2s;
-    cursor:default;
+.badge.active-water{
+    background:rgba(0,212,255,0.15);color:var(--cyan);border-color:var(--cyan);
+    box-shadow:0 0 14px var(--cyan-g);animation:pulseWater 2s infinite;
 }
-.di:hover{background:rgba(255,71,133,0.06);transform:translateX(3px)}
-.dl-lbl{display:flex;align-items:center;gap:9px;color:var(--text-dim);font-size:.9rem}
-.dl-lbl svg{width:16px;height:16px;stroke:var(--text-dim);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:all .3s}
-.di:hover .dl-lbl svg{stroke:var(--pink);filter:drop-shadow(0 0 4px var(--pink-g))}
-.dl-val{font-weight:600;font-size:.9rem;transition:color .3s;font-variant-numeric:tabular-nums}
-.di:hover .dl-val{color:var(--pink)}
+@keyframes pulseWater{0%,100%{box-shadow:0 0 14px var(--cyan-g)}50%{box-shadow:0 0 25px var(--cyan),0 0 40px var(--cyan-g)}}
 
-/* ═══ MOISTURE BARS ═══ */
-.moist-bar-wrap{margin-top:4px}
-.moist-item{margin-bottom:10px}
-.moist-head{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:5px}
-.moist-head span:first-child{color:var(--text-dim)}
-.moist-head span:last-child{font-weight:600;color:var(--cyan);text-shadow:0 0 6px var(--cyan-g)}
-.moist-track{height:10px;background:rgba(255,255,255,0.04);border-radius:5px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.5)}
-.moist-fill{height:100%;border-radius:5px;transition:width 1.2s cubic-bezier(.4,0,.2,1);position:relative}
-.moist-fill::after{
-    content:'';position:absolute;inset:0;
-    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);
-    transform:translateX(-100%);animation:mShimmer 3s infinite;
-}
-@keyframes mShimmer{100%{transform:translateX(100%)}}
-.moist-fill.low{background:linear-gradient(90deg,var(--red),var(--orange));box-shadow:0 0 10px rgba(255,51,102,0.4)}
-.moist-fill.mid{background:linear-gradient(90deg,var(--orange),var(--cyan));box-shadow:0 0 10px var(--cyan-g)}
-.moist-fill.high{background:linear-gradient(90deg,var(--cyan),var(--green));box-shadow:0 0 10px var(--green-g)}
-
-/* ═══ STATUS PILL ═══ */
-.pill{padding:4px 10px;border-radius:14px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;transition:all .3s}
-.pill.ok{background:var(--green);color:#000;box-shadow:0 0 12px var(--green-g)}
-.pill.err{background:var(--red);color:#fff;box-shadow:0 0 12px rgba(255,51,102,0.5)}
-.pill:hover{transform:scale(1.08)}
-
-/* ═══ STEUERUNG ═══ */
-.ctrl-list{display:flex;flex-direction:column;gap:14px}
-.ctrl-row{display:flex;justify-content:space-between;align-items:center}
-.ctrl-lbl{display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--text-dim)}
-.ctrl-lbl svg{width:16px;height:16px;stroke:var(--text-dim);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
-
-/* Toggle */
-.tgl{position:relative;width:44px;height:24px;flex-shrink:0}
-.tgl input{opacity:0;width:0;height:0;position:absolute}
-.tgl-s{
-    position:absolute;inset:0;cursor:pointer;border-radius:24px;
-    background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);
-    transition:.4s;
-}
-.tgl-s::before{
-    content:'';position:absolute;width:18px;height:18px;left:2px;bottom:2px;
-    background:var(--text-dim);border-radius:50%;transition:.4s;
-}
-.tgl input:checked+.tgl-s{background:rgba(255,71,133,0.2);border-color:var(--pink);box-shadow:0 0 12px var(--pink-g)}
-.tgl input:checked+.tgl-s::before{transform:translateX(20px);background:var(--pink);box-shadow:0 0 10px var(--pink)}
-
-/* Slider */
-.sld-wrap{width:100%;margin-top:6px}
-.sld-row{display:flex;align-items:center;gap:10px}
-input[type=range]{
-    flex:1;-webkit-appearance:none;background:transparent;
-}
-input[type=range]:focus{outline:none}
-input[type=range]::-webkit-slider-runnable-track{height:6px;background:linear-gradient(90deg,var(--pink) var(--val,0%),rgba(255,255,255,0.08) var(--val,0%));border-radius:3px}
-input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none;height:16px;width:16px;border-radius:50%;
-    background:var(--pink);margin-top:-5px;cursor:pointer;
-    box-shadow:0 0 10px var(--pink-g);transition:transform .2s,box-shadow .2s;
-}
-input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3);box-shadow:0 0 18px var(--pink)}
-input[type=range]::-moz-range-track{height:6px;background:linear-gradient(90deg,var(--pink) var(--val,0%),rgba(255,255,255,0.08) var(--val,0%));border-radius:3px;border:none}
-input[type=range]::-moz-range-thumb{height:16px;width:16px;border-radius:50%;background:var(--pink);border:none;cursor:pointer;box-shadow:0 0 10px var(--pink-g)}
-.sld-val{min-width:50px;text-align:right;font-size:.85rem;color:var(--text-dim);font-variant-numeric:tabular-nums}
-
-/* ═══ KI & LOG ═══ */
-.ki-txt{font-size:.9rem;line-height:1.55;color:#c0c0c8;overflow-y:auto;flex:1}
-.log-wrap{flex:1;overflow-y:auto;max-height:350px;display:flex;flex-direction:column;gap:8px;padding-right:4px}
-.log-wrap::-webkit-scrollbar{width:5px}
-.log-wrap::-webkit-scrollbar-track{background:transparent}
-.log-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:3px}
-.log-wrap::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.15)}
-
-/* ═══ WATER DROP ANIMATION ═══ */
-.drop{display:inline-block;animation:dropFloat 2.5s ease-in-out infinite}
-@keyframes dropFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-
-/* ═══ SPRINKLER ANIMATION ═══ */
-.sprinkler-active .ph svg{animation:sprinklerSpin 2s linear infinite}
-@keyframes sprinklerSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+/* ═══ GAUGE ROWS ═══ */
+.dash-row{display:flex;justify-content:center;gap:40px;width:100%;flex-wrap:wrap}
 
 /* ═══ FLOW GAUGE ═══ */
-.gauge-wrap{display:flex;flex-direction:column;align-items:center;padding:8px 0 4px;margin-bottom:6px}
-.gauge-svg{width:160px;height:90px;overflow:visible}
-.gauge-bg{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:10;stroke-linecap:round}
-.gauge-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1),stroke .5s;filter:drop-shadow(0 0 6px var(--cyan-g))}
-.gauge-fill.hot{filter:drop-shadow(0 0 12px var(--pink-g))}
-.gauge-needle{fill:var(--text);transition:transform 1.2s cubic-bezier(.4,0,.2,1);transform-origin:80px 80px;filter:drop-shadow(0 0 4px rgba(255,255,255,0.4))}
-.gauge-center{fill:var(--panel);stroke:rgba(255,255,255,0.15);stroke-width:1}
-.gauge-value{font-size:1.4rem;font-weight:700;fill:var(--cyan);text-anchor:middle;font-variant-numeric:tabular-nums;transition:fill .5s}
-.gauge-value.hot{fill:var(--pink)}
-.gauge-label{font-size:.7rem;fill:var(--text-dim);text-anchor:middle}
-.gauge-tick{fill:var(--text-dim);font-size:.55rem;text-anchor:middle}
+.gauge-box{display:flex;flex-direction:column;align-items:center}
+.gauge-title{font-size:.85rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;font-weight:600}
+.gauge-svg{width:140px;height:90px;overflow:visible}
+.g-bg{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:10;stroke-linecap:round}
+.g-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1s ease-out,stroke .5s;filter:drop-shadow(0 0 6px var(--cyan-g))}
+.g-fill.hot{filter:drop-shadow(0 0 12px var(--pink-g))}
+.g-needle{fill:var(--text);transition:transform 1s ease-out;transform-origin:80px 80px;filter:drop-shadow(0 0 4px rgba(255,255,255,0.4))}
+.g-center{fill:var(--panel);stroke:rgba(255,255,255,0.15);stroke-width:1}
+.g-val{font-size:1.5rem;font-weight:700;fill:var(--cyan);text-anchor:middle;transition:fill .5s}
+.g-val.hot{fill:var(--pink)}
+.g-unit{font-size:.7rem;fill:var(--text-dim);text-anchor:middle}
+.g-tick{fill:var(--text-dim);font-size:.55rem;text-anchor:middle}
 
 /* ═══ WATER TANK ═══ */
 .water-tank{
-    width:105px;height:105px;border-radius:50%;
-    border:2px solid rgba(255,255,255,0.08);
-    box-shadow:0 0 15px rgba(0,212,255,0.15),inset 0 0 15px rgba(0,212,255,0.1);
+    width:110px;height:110px;border-radius:50%;
+    border:3px solid rgba(255,255,255,0.08);
+    box-shadow:0 0 20px rgba(0,212,255,0.15),inset 0 0 20px rgba(0,212,255,0.1);
     position:relative;overflow:hidden;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    margin-left:15px;background:rgba(0,0,0,0.3);
+    background:rgba(0,0,0,0.4);
 }
 .water-wave{
     position:absolute;top:100%;left:-50%;width:200%;height:200%;
@@ -204,308 +80,208 @@ input[type=range]::-moz-range-thumb{height:16px;width:16px;border-radius:50%;bac
     animation:wave 6s linear infinite;
 }
 @keyframes wave{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-.water-text{position:relative;z-index:2;font-size:1.05rem;font-weight:700;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.8)}
-.water-label{position:relative;z-index:2;font-size:0.55rem;color:rgba(255,255,255,0.9);text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.8);margin-top:4px}
+.water-text{position:relative;z-index:2;font-size:1.2rem;font-weight:700;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.8)}
+.water-label{position:relative;z-index:2;font-size:0.6rem;color:rgba(255,255,255,0.9);text-transform:uppercase;text-shadow:0 1px 4px rgba(0,0,0,0.8);margin-top:2px}
+
+/* ═══ MOISTURE GAUGE (RING) ═══ */
+.m-svg{width:110px;height:110px;overflow:visible;transform:rotate(-90deg)}
+.m-bg{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:8}
+.m-fill{fill:none;stroke:var(--green);stroke-width:8;stroke-dasharray:283;stroke-dashoffset:283;transition:stroke-dashoffset 1s ease-out,stroke .5s;filter:drop-shadow(0 0 8px var(--green-g))}
+.m-fill.triggered{stroke:var(--blue);filter:drop-shadow(0 0 12px var(--blue-g))}
+.m-trigger-line{stroke:rgba(255,255,255,0.8);stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 2px #000)}
+.m-text-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.m-val{font-size:1.4rem;font-weight:700;color:var(--green);transition:color .5s;text-shadow:0 0 10px var(--green-g)}
+.m-val.triggered{color:var(--blue);text-shadow:0 0 15px var(--blue-g)}
+.m-unit{font-size:.7rem;color:var(--text-dim);font-weight:600;text-transform:uppercase;margin-top:-2px}
+.m-container{position:relative;width:110px;height:110px;margin-top:5px}
+
 </style>
 </head>
 <body>
-<div class="grid">
 
-    <!-- ═══ TOP: STATUS ═══ -->
-    <div class="p row-top" id="panelStatus">
-        <div class="top-status">
-            <div class="ph">
-                <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Meldung
-                <span style="margin-left:auto" id="waterBadge" class="watering-badge inactive">Inaktiv</span>
-            </div>
-            <div class="status-html" id="valStatus">Warte auf Daten...</div>
-        </div>
-        <div class="top-gauge">
-            <svg class="gauge-svg" viewBox="0 0 160 95">
-                <text class="gauge-tick" id="gt0" x="35" y="80">0</text>
-                <text class="gauge-tick" id="gt1" x="48" y="52">3</text>
-                <text class="gauge-tick" id="gt2" x="80" y="38">6</text>
-                <text class="gauge-tick" id="gt3" x="112" y="52">9</text>
-                <text class="gauge-tick" id="gt4" x="125" y="80">12</text>
-                <path class="gauge-bg" d="M 20 80 A 60 60 0 0 1 140 80"/>
-                <path id="gaugeArc" class="gauge-fill" d="M 20 80 A 60 60 0 0 1 140 80" stroke-dasharray="188.5" stroke-dashoffset="188.5" stroke="var(--cyan)"/>
-                <polygon id="gaugeNeedle" class="gauge-needle" points="80,30 77,78 83,78"/>
-                <circle class="gauge-center" cx="80" cy="80" r="6"/>
-                <text id="gaugeVal" class="gauge-value" x="80" y="75">0,00</text>
-                <text class="gauge-label" x="80" y="92">l/min</text>
-            </svg>
-            <!-- Water Tank -->
-            <div class="water-tank" id="waterTank">
-                <div class="water-wave" id="waterWave"></div>
-                <div class="water-text" id="waterVal">0 L</div>
-                <div class="water-label" id="waterLbl">Bereit</div>
-            </div>
-        </div>
+<div class="header">
+    <div class="status-text" id="summaryStatus">Warte auf Daten...</div>
+    <div class="badges">
+        <div id="badgeAuto" class="badge">Automatik Inaktiv</div>
+        <div id="badgeWater" class="badge" style="display:none">Bewässerung</div>
+    </div>
+</div>
+
+<div class="dash-row">
+    <!-- Flow Gauge -->
+    <div class="gauge-box">
+        <div class="gauge-title">Durchfluss</div>
+        <svg class="gauge-svg" viewBox="0 0 160 95">
+            <text class="g-tick" id="gt0" x="35" y="80">0</text>
+            <text class="g-tick" id="gt1" x="48" y="52">3</text>
+            <text class="g-tick" id="gt2" x="80" y="38">6</text>
+            <text class="g-tick" id="gt3" x="112" y="52">9</text>
+            <text class="g-tick" id="gt4" x="125" y="80">12</text>
+            <path class="g-bg" d="M 20 80 A 60 60 0 0 1 140 80"/>
+            <path id="flowArc" class="g-fill" d="M 20 80 A 60 60 0 0 1 140 80" stroke-dasharray="188.5" stroke-dashoffset="188.5" stroke="var(--cyan)"/>
+            <polygon id="flowNeedle" class="g-needle" points="80,30 77,78 83,78"/>
+            <circle class="g-center" cx="80" cy="80" r="6"/>
+            <text id="flowVal" class="g-val" x="80" y="75">0,0</text>
+            <text class="g-unit" x="80" y="92">l/min</text>
+        </svg>
     </div>
 
-    <!-- ═══ LEFT: SMARTLAWNAI DATA ═══ -->
-    <div class="p">
-        <div class="ph">
-            <svg viewBox="0 0 24 24" class="drop"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-            SmartLawnAI
-        </div>
-        <div class="dl">
-            <div class="di"><div class="dl-lbl"><svg viewBox="0 0 24 24"><path d="M20 16.58A5 5 0 0018 7h-1.26A8 8 0 104 15.25"/></svg>Regen Heute</div><div class="dl-val" id="valRainT">-</div></div>
-            <div class="di"><div class="dl-lbl"><svg viewBox="0 0 24 24"><path d="M20 16.58A5 5 0 0018 7h-1.26A8 8 0 104 15.25"/></svg>Regen Morgen</div><div class="dl-val" id="valRainM">-</div></div>
-            <div class="di"><div class="dl-lbl"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Heute</div><div class="dl-val" id="valToday">-</div></div>
-            <div class="di"><div class="dl-lbl"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Diese Woche</div><div class="dl-val" id="valWeek">-</div></div>
-            <div class="di"><div class="dl-lbl"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Dieser Monat</div><div class="dl-val" id="valMonth">-</div></div>
-        </div>
-
-        <!-- Moisture -->
-        <div class="moist-bar-wrap" id="moistBars"></div>
-
-        <!-- Device Status -->
-        <div class="di" style="margin-top:8px">
-            <div class="dl-lbl"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Gerätestatus</div>
-            <span class="pill" id="pillDevice">-</span>
-        </div>
-    </div>
-
-    <!-- ═══ CENTER: STEUERUNG ═══ -->
-    <div class="p" id="panelCtrl">
-        <div class="ph">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-            Steuerung
-        </div>
-        <div class="ctrl-list">
-            <div class="ctrl-row">
-                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Automatik aktiv</div>
-                <label class="tgl"><input type="checkbox" id="chkAuto" onchange="act('Action_AutomaticActive',this.checked)"><span class="tgl-s"></span></label>
-            </div>
-
-            <div class="ctrl-row">
-                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Sperrzeit aktiv</div>
-                <label class="tgl"><input type="checkbox" id="chkBlock" onchange="act('Action_SperrzeitActive',this.checked)"><span class="tgl-s"></span></label>
-            </div>
-
-            <div class="ctrl-row">
-                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>Manuell Starten</div>
-                <label class="tgl"><input type="checkbox" id="chkForce" onchange="act('Action_ForceStart',this.checked)"><span class="tgl-s"></span></label>
-            </div>
-
-            <!-- Sliders -->
-            <div class="sld-wrap">
-                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Trigger Feuchte</div>
-                <div class="sld-row"><input type="range" id="sldTrigger" min="0" max="100" step="5" oninput="updSld(this,'valTrigger','%')" onchange="act('Action_DefaultStartSchwellwert',+this.value)"><span class="sld-val" id="valTrigger">0%</span></div>
-            </div>
-            <div class="sld-wrap">
-                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>Ziel Feuchte</div>
-                <div class="sld-row"><input type="range" id="sldTarget" min="0" max="100" step="5" oninput="updSld(this,'valTarget','%')" onchange="act('Action_DefaultZielFeuchte',+this.value)"><span class="sld-val" id="valTarget">0%</span></div>
-            </div>
-            <div class="sld-wrap">
-                <div class="ctrl-lbl"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Max Dauer</div>
-                <div class="sld-row"><input type="range" id="sldMax" min="0" max="180" step="5" oninput="updSld(this,'valMax','Min')" onchange="act('Action_GlobalMaxDuration',+this.value)"><span class="sld-val" id="valMax">0 Min</span></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══ RIGHT: KI & LOG ═══ -->
-    <div class="col-r">
-        <div class="p" style="flex:1">
-            <div class="ph">
-                <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
-                KI Antwort
-            </div>
-            <div class="ki-txt" id="valAI">Lade KI Status...</div>
-        </div>
-        <div class="p" style="flex:2">
-            <div class="ph">
-                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                Loginfo
-            </div>
-            <div class="log-wrap" id="logFeed"><div style="color:var(--text-dim);padding:10px">Keine Logs</div></div>
+    <!-- Water Tank -->
+    <div class="gauge-box">
+        <div class="gauge-title">Verbrauch</div>
+        <div class="water-tank">
+            <div class="water-wave" id="tankWave"></div>
+            <div class="water-text" id="tankVal">0 L</div>
+            <div class="water-label" id="tankLbl">Bereit</div>
         </div>
     </div>
 </div>
 
+<div class="dash-row" id="moistureRow" style="margin-top:20px">
+    <!-- Moisture gauges rendered here -->
+</div>
+
 <script>
-let D={};
+let currentGaugeMax = 12;
 
 function handleMessage(raw){
     try{
-        const d=typeof raw==='string'?JSON.parse(raw):raw;
-        if(d.error){document.getElementById('valStatus').textContent=d.error;return}
-        D=d;
+        const d = typeof raw==='string' ? JSON.parse(raw) : raw;
+        if(d.error) { document.getElementById('summaryStatus').textContent = d.error; return; }
 
-        // Status (contains HTML progress bar from SmartLawnAI)
-        const statusEl=document.getElementById('valStatus');
-        statusEl.innerHTML=d.SummaryStatus||'Bereit';
+        // --- Status & Badges ---
+        // Strip HTML from SummaryStatus (progress bars) and just show the text
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = d.SummaryStatus || 'Bereit';
+        document.getElementById('summaryStatus').textContent = tempDiv.textContent.replace(/Verbleibend.*/, '');
 
-        // Watering badge and Tank calc
-        const badge=document.getElementById('waterBadge');
-        const tankW=document.getElementById('waterWave');
-        const tankV=document.getElementById('waterVal');
-        const tankL=document.getElementById('waterLbl');
-
-        let isCycleActive = d.WateringActive;
-        let isSickerpause = false;
-        if(d.SummaryStatus && (d.SummaryStatus.includes('%') || d.SummaryStatus.includes('Sickerpause') || d.SummaryStatus.includes('Wartet'))) {
-            isCycleActive = true;
-            if(d.SummaryStatus.includes('Sickerpause')) isSickerpause = true;
+        const bAuto = document.getElementById('badgeAuto');
+        if(d.AutomaticActive) {
+            bAuto.className = 'badge active-auto';
+            bAuto.textContent = 'Automatik Aktiv';
+        } else {
+            bAuto.className = 'badge';
+            bAuto.textContent = 'Automatik Inaktiv';
         }
 
-        if(isCycleActive){
-            if(isSickerpause){
-                badge.className='watering-badge active';badge.textContent='Sickerpause';
-                badge.style.background='rgba(255,152,0,0.15)';badge.style.color='var(--orange)';badge.style.border='1px solid rgba(255,152,0,0.3)';
-                document.getElementById('panelStatus').classList.remove('sprinkler-active');
-            } else if (d.WateringActive) {
-                badge.className='watering-badge active';badge.textContent='Bewässert';
-                badge.style.background='';badge.style.color='';badge.style.border='';
-                document.getElementById('panelStatus').classList.add('sprinkler-active');
-            } else {
-                badge.className='watering-badge active';badge.textContent='Geplant';
-                badge.style.background='';badge.style.color='';badge.style.border='';
-                document.getElementById('panelStatus').classList.remove('sprinkler-active');
-            }
+        const bWater = document.getElementById('badgeWater');
+        if(d.WateringActive) {
+            bWater.style.display = 'block';
+            bWater.className = 'badge active-water';
+        } else {
+            bWater.style.display = 'none';
+        }
 
-            // Parse progress and remaining time from SummaryStatus HTML
-            let prog = 0, remMin = 0;
-            if(d.SummaryStatus){
-                const pM = d.SummaryStatus.match(/(\d+)%/);
-                if(pM) prog = parseInt(pM[1]);
-                const mM = d.SummaryStatus.match(/Verbleibend:.*?(\d+):/);
-                if(mM) remMin = parseInt(mM[1]);
-            }
-            if(prog > 0 && remMin > 0 && d.FlowRateRaw > 0){
-                const elapMin = remMin / (1 - (prog/100)) * (prog/100);
-                const totMin = remMin + elapMin;
-                const cVol = Math.round(elapMin * d.FlowRateRaw);
-                const tVol = Math.round(totMin * d.FlowRateRaw);
-                tankW.style.top = (100 - prog) + '%';
-                tankV.textContent = cVol + ' L';
-                tankL.textContent = 'von ' + tVol + ' L';
-            } else if (d.FlowRateRaw > 0 || isSickerpause) {
-                tankW.style.top = '50%';
-                tankV.textContent = '~ L';
-                tankL.textContent = 'Berechne...';
-            }
-        }else{
-            badge.className='watering-badge inactive';badge.textContent='Inaktiv';
-            badge.style.background='';badge.style.color='';badge.style.border='';
-            document.getElementById('panelStatus').classList.remove('sprinkler-active');
+        // --- Flow Gauge ---
+        let flowRate = d.FlowRateRaw || 0;
+        if (flowRate > currentGaugeMax * 0.95) {
+            currentGaugeMax = Math.max(12, Math.ceil((flowRate * 1.1) / 4) * 4);
+            document.getElementById('gt1').textContent = currentGaugeMax * 0.25;
+            document.getElementById('gt2').textContent = currentGaugeMax * 0.5;
+            document.getElementById('gt3').textContent = currentGaugeMax * 0.75;
+            document.getElementById('gt4').textContent = currentGaugeMax;
+        }
+        const fArcLen = 188.5; 
+        const fPct = Math.min(1, Math.max(0, flowRate / currentGaugeMax));
+        const fOffset = fArcLen * (1 - fPct);
+        const fArc = document.getElementById('flowArc');
+        fArc.setAttribute('stroke-dashoffset', fOffset);
+        
+        const isHot = flowRate >= (currentGaugeMax * 0.75);
+        if(isHot){
+            fArc.setAttribute('stroke', 'var(--pink)');
+            fArc.classList.add('hot');
+            document.getElementById('flowVal').classList.add('hot');
+        } else {
+            fArc.setAttribute('stroke', 'var(--cyan)');
+            fArc.classList.remove('hot');
+            document.getElementById('flowVal').classList.remove('hot');
+        }
+        
+        const angle = -90 + fPct * 180;
+        document.getElementById('flowNeedle').style.transform = `rotate(${angle}deg)`;
+        document.getElementById('flowVal').textContent = flowRate.toFixed(1).replace('.',',');
+
+        // --- Water Tank ---
+        const tankW = document.getElementById('tankWave');
+        const tankV = document.getElementById('tankVal');
+        const tankL = document.getElementById('tankLbl');
+        let prog = 0, remMin = 0;
+        if(d.SummaryStatus){
+            const pM = d.SummaryStatus.match(/(\d+)%/);
+            if(pM) prog = parseInt(pM[1]);
+            const mM = d.SummaryStatus.match(/Verbleibend:.*?(\d+):/);
+            if(mM) remMin = parseInt(mM[1]);
+        }
+        
+        if(d.WateringActive && prog > 0 && remMin > 0 && flowRate > 0) {
+            const elapMin = remMin / (1 - (prog/100)) * (prog/100);
+            const totMin = remMin + elapMin;
+            const cVol = Math.round(elapMin * flowRate);
+            const tVol = Math.round(totMin * flowRate);
+            tankW.style.top = (100 - prog) + '%';
+            tankV.textContent = cVol + ' L';
+            tankL.textContent = 'von ' + tVol + ' L';
+        } else if (d.WateringActive && flowRate > 0) {
+            tankW.style.top = '50%';
+            tankV.textContent = '~ L';
+            tankL.textContent = 'Läuft...';
+        } else {
             tankW.style.top = '100%';
             tankV.textContent = '0 L';
             tankL.textContent = 'Bereit';
         }
 
-        // Data values — Flow Gauge
-        updateGauge(d.FlowRateRaw||0);
-        document.getElementById('valRainT').textContent=d.RainToday||'-';
-        document.getElementById('valRainM').textContent=d.RainTomorrow||'-';
-        document.getElementById('valToday').textContent=d.ConsumptionToday||'-';
-        document.getElementById('valWeek').textContent=d.ConsumptionWeek||'-';
-        document.getElementById('valMonth').textContent=d.ConsumptionMonth||'-';
-
-        // Moisture bars
-        const mb=document.getElementById('moistBars');
-        if(d.MoistureSensors&&d.MoistureSensors.length){
-            let h='';
-            d.MoistureSensors.forEach(s=>{
-                const r=Math.min(100,Math.max(0,s.Raw));
-                const cls=r<30?'low':r<60?'mid':'high';
-                h+=`<div class="moist-item">
-                    <div class="moist-head"><span>${s.Name}</span><span>${s.Value}</span></div>
-                    <div class="moist-track"><div class="moist-fill ${cls}" style="width:${r}%"></div></div>
+        // --- Moisture Gauges ---
+        const mRow = document.getElementById('moistureRow');
+        if(d.MoistureSensors && d.MoistureSensors.length) {
+            const trigger = d.TriggerFeuchte || 0;
+            let mHtml = '';
+            
+            d.MoistureSensors.forEach(s => {
+                const val = Math.max(0, Math.min(100, s.Raw));
+                const isTriggered = val <= trigger;
+                
+                // Ring calculation (circumference of r=45 is ~282.7)
+                const c = 282.74;
+                const offset = c - (val / 100) * c;
+                
+                // Trigger line calculation
+                // Transform from percentage (0-100) to degrees on the circle
+                // The circle starts at top (-90deg in CSS, which is 0deg for stroke-dasharray)
+                // So 0% is at top. 25% is at right (90deg).
+                const triggerDeg = (trigger / 100) * 360;
+                // Calculate x, y on circle r=45, center 55,55
+                // SVG coordinates: 0deg is right (+x). But we rotated the SVG -90deg.
+                // So in the unrotated SVG space, 0% is right. We need to map trigger to radians.
+                const rad = (triggerDeg * Math.PI) / 180;
+                const tx1 = 55 + 38 * Math.cos(rad);
+                const ty1 = 55 + 38 * Math.sin(rad);
+                const tx2 = 55 + 52 * Math.cos(rad);
+                const ty2 = 55 + 52 * Math.sin(rad);
+                
+                mHtml += `
+                <div class="gauge-box">
+                    <div class="gauge-title">${s.Name}</div>
+                    <div class="m-container">
+                        <svg class="m-svg" viewBox="0 0 110 110">
+                            <circle class="m-bg" cx="55" cy="55" r="45"/>
+                            <circle class="m-fill ${isTriggered ? 'triggered' : ''}" cx="55" cy="55" r="45" style="stroke-dashoffset:${offset}"/>
+                            ${trigger > 0 ? `<line class="m-trigger-line" x1="${tx1}" y1="${ty1}" x2="${tx2}" y2="${ty2}" />` : ''}
+                        </svg>
+                        <div class="m-text-wrap">
+                            <div class="m-val ${isTriggered ? 'triggered' : ''}">${Math.round(val)}</div>
+                            <div class="m-unit">%</div>
+                        </div>
+                    </div>
                 </div>`;
             });
-            mb.innerHTML=h;
-        }else{mb.innerHTML=''}
-
-        // Device pill
-        const pill=document.getElementById('pillDevice');
-        if(d.DeviceStatusOk){pill.className='pill ok';pill.textContent='Alles OK'}
-        else{pill.className='pill err';pill.textContent='Fehler'}
-
-        // Toggles
-        document.getElementById('chkAuto').checked=!!d.AutomaticActive;
-        document.getElementById('chkBlock').checked=!!d.SperrzeitActive;
-        document.getElementById('chkForce').checked=!!d.ForceStart;
-
-        // Sliders
-        setSld('sldTrigger','valTrigger',d.TriggerFeuchte||0,'%');
-        setSld('sldTarget','valTarget',d.ZielFeuchte||0,'%');
-        setSld('sldMax','valMax',d.MaxDuration||0,'Min');
-
-        // AI
-        const aiEl=document.getElementById('valAI');
-        aiEl.innerHTML=(d.AiResponse||'Keine KI-Antwort').replace(/\n/g,'<br>');
-
-        // Log (raw HTML from SmartLawnAI)
-        const logEl=document.getElementById('logFeed');
-        if(d.LogInfo&&d.LogInfo.trim()){logEl.innerHTML=d.LogInfo}
-        else{logEl.innerHTML='<div style="color:var(--text-dim);padding:10px">Keine Logs</div>'}
+            mRow.innerHTML = mHtml;
+        } else {
+            mRow.innerHTML = '';
+        }
 
     }catch(e){console.error('Parse error:',e)}
-}
-
-function setSld(sId,vId,val,unit){
-    const s=document.getElementById(sId);
-    if(s&&document.activeElement!==s){
-        s.value=val;
-        const pct=(val-s.min)/(s.max-s.min)*100;
-        s.style.setProperty('--val',pct+'%');
-    }
-    const v=document.getElementById(vId);
-    if(v)v.textContent=Math.round(val)+' '+unit;
-}
-function updSld(el,vId,unit){
-    const v=document.getElementById(vId);
-    if(v)v.textContent=el.value+' '+unit;
-    const pct=(el.value-el.min)/(el.max-el.min)*100;
-    el.style.setProperty('--val',pct+'%');
-}
-function act(id,val){
-    if(typeof requestAction!=='undefined')requestAction(id,val);
-    else console.log('RequestAction:',id,val);
-}
-
-let currentGaugeMax = 12;
-
-function updateGauge(flowRate){
-    // Self-calibration: if flow approaches max, increase scale (multiples of 4 for clean ticks)
-    if (flowRate > currentGaugeMax * 0.95) {
-        currentGaugeMax = Math.max(12, Math.ceil((flowRate * 1.1) / 4) * 4);
-        document.getElementById('gt1').textContent = currentGaugeMax * 0.25;
-        document.getElementById('gt2').textContent = currentGaugeMax * 0.5;
-        document.getElementById('gt3').textContent = currentGaugeMax * 0.75;
-        document.getElementById('gt4').textContent = currentGaugeMax;
-    }
-
-    const arcLen=188.5; // half-circle arc length
-    const pct=Math.min(1,Math.max(0,flowRate/currentGaugeMax));
-    const offset=arcLen*(1-pct);
-
-    // Arc fill
-    const arc=document.getElementById('gaugeArc');
-    arc.setAttribute('stroke-dashoffset',offset);
-
-    // Color: cyan at low, pink at high (dynamically set to 75% of scale)
-    const isHot=flowRate >= (currentGaugeMax * 0.75);
-    if(isHot){
-        arc.setAttribute('stroke','var(--pink)');
-        arc.classList.add('hot');
-    }else{
-        arc.setAttribute('stroke','var(--cyan)');
-        arc.classList.remove('hot');
-    }
-
-    // Needle rotation: -90deg (left) to +90deg (right)
-    const angle=-90+pct*180;
-    const needle=document.getElementById('gaugeNeedle');
-    needle.style.transform = 'rotate('+angle+'deg)';
-
-    // Value text
-    const valEl=document.getElementById('gaugeVal');
-    valEl.textContent=flowRate.toFixed(2).replace('.',',');
-    if(isHot){valEl.classList.add('hot')}else{valEl.classList.remove('hot')}
 }
 
 if(typeof requestAction!=='undefined')requestAction('Init',0);

@@ -164,20 +164,9 @@ class SmartIrrigationKachel extends IPSModuleStrict
         $payload['SummaryStatus'] = (string)$this->readSlaiValue($slaiId, 'SummaryStatus', '');
         $payload['WateringActive'] = (bool)$this->readSlaiValue($slaiId, 'WateringActive', false);
 
-        // Sensor & Weather data
+        // Sensor data
         $payload['FlowRate'] = $this->readSlaiFormatted($slaiId, 'CurrentFlowRate', '0,00 l/min');
         $payload['FlowRateRaw'] = (float)$this->readSlaiValue($slaiId, 'CurrentFlowRate', 0.0);
-        $payload['RainToday'] = $this->readSlaiFormatted($slaiId, 'ForecastRainToday', '0,00 mm');
-        $payload['RainTomorrow'] = $this->readSlaiFormatted($slaiId, 'ForecastRainTomorrow', '0,00 mm');
-
-        // Consumption
-        $payload['ConsumptionToday'] = $this->readSlaiFormatted($slaiId, 'WaterToday', '0 L');
-        $payload['ConsumptionWeek'] = $this->readSlaiFormatted($slaiId, 'WaterThisWeek', '0 L');
-        $payload['ConsumptionMonth'] = $this->readSlaiFormatted($slaiId, 'WaterThisMonth', '0 L');
-
-        // Device status
-        $deviceStatus = (int)$this->readSlaiValue($slaiId, 'DeviceAvailable', 0);
-        $payload['DeviceStatusOk'] = ($deviceStatus >= 1);
 
         // Moisture sensors from zones
         $payload['MoistureSensors'] = [];
@@ -193,9 +182,8 @@ class SmartIrrigationKachel extends IPSModuleStrict
                         if (is_array($resolved) && isset($resolved['MoistureID']) && $resolved['MoistureID'] > 0) {
                             $moistureVal = GetValue($resolved['MoistureID']);
                             $payload['MoistureSensors'][] = [
-                                'Name' => 'Feuchte ' . $zoneName,
-                                'Value' => round((float)$moistureVal, 1) . ' %',
-                                'Raw' => (int)round((float)$moistureVal)
+                                'Name' => $zoneName,
+                                'Raw' => (float)$moistureVal
                             ];
                         }
                     }
@@ -203,17 +191,9 @@ class SmartIrrigationKachel extends IPSModuleStrict
             }
         }
 
-        // Controls (Sliders & Switches)
+        // Automatic Status & Trigger threshold (for intelligent gauge lines)
         $payload['AutomaticActive'] = (bool)$this->readSlaiValue($slaiId, 'AutomaticActive', false);
-        $payload['SperrzeitActive'] = (bool)$this->readSlaiValue($slaiId, 'SperrzeitActive', false);
-        $payload['ForceStart'] = (bool)$this->readSlaiValue($slaiId, 'ForceStart', false);
         $payload['TriggerFeuchte'] = (float)$this->readSlaiValue($slaiId, 'DefaultStartSchwellwert', 0);
-        $payload['ZielFeuchte'] = (float)$this->readSlaiValue($slaiId, 'DefaultZielFeuchte', 0);
-        $payload['MaxDuration'] = (int)$this->readSlaiValue($slaiId, 'GlobalMaxDuration', 0);
-
-        // AI & Logs
-        $payload['AiResponse'] = (string)$this->readSlaiValue($slaiId, 'LastGeminiResponse', '');
-        $payload['LogInfo'] = (string)$this->readSlaiValue($slaiId, 'IrrigationLog', '');
 
         $this->UpdateVisualizationValue(json_encode($payload, JSON_UNESCAPED_UNICODE));
         $this->DA_SetAvailable(true);
