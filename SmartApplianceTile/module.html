@@ -86,14 +86,15 @@
         
         @keyframes subtle-rock {
             0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-4deg); }
-            75% { transform: rotate(4deg); }
+            25% { transform: rotate(-8deg); }
+            75% { transform: rotate(8deg); }
         }
 
         .card.active .header svg {
             fill: var(--accent);
-            animation: subtle-rock 3s ease-in-out infinite;
-            transform-origin: center center;
+            animation: subtle-rock 2.5s ease-in-out infinite;
+            transform-origin: center;
+            transform-box: fill-box;
         }
 
         .title {
@@ -125,6 +126,7 @@
             transform: rotate(-90deg);
             width: 100%;
             height: 100%;
+            overflow: visible;
         }
 
         .progress-bg {
@@ -142,7 +144,7 @@
         }
 
         .card.active .progress-bar {
-            filter: drop-shadow(0 0 4px rgba(255, 71, 133, 0.5));
+            filter: drop-shadow(0 0 6px rgba(255, 71, 133, 0.9));
         }
 
         .card:not(.active) .progress-bar {
