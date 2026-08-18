@@ -118,7 +118,7 @@ html, body {
 .shield-container {
     position: relative;
     width: 100%;
-    max-width: 130px;
+    max-width: 100px;
     aspect-ratio: 1 / 1;
     border-radius: 50%;
     background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
@@ -185,7 +185,7 @@ html, body {
 
 .bubbles-row {
     display: flex;
-    gap: 25px;
+    gap: 15px;
     justify-content: center;
     width: 100%;
 }
@@ -195,7 +195,7 @@ html, body {
     align-items: center;
     gap: 15px;
     flex: 1;
-    max-width: 130px;
+    max-width: 100px;
     cursor: help;
 }
 .bubble-label {
@@ -482,7 +482,7 @@ function render(data) {
         logsContainer.style.gap = '8px';
         logsContainer.style.alignItems = 'stretch';
         logsContainer.style.width = '100%';
-        logsContainer.style.maxWidth = '500px';
+        logsContainer.style.maxWidth = '420px';
         logsContainer.style.margin = '0 auto';
         
         if (data.latestLogs && data.latestLogs.length > 0) {
@@ -533,7 +533,7 @@ function render(data) {
         sensorList.appendChild(logsContainer);
         
     } else if (currentView === 'zustand') {
-        let html = '<div style="display:flex; flex-direction:column; gap:8px; width:100%; max-width:500px; margin:0 auto;">';
+        let html = '<div style="display:flex; flex-direction:column; gap:8px; width:100%; max-width:420px; margin:0 auto;">';
         if (data.openWindows && data.openWindows.length > 0) {
             data.openWindows.forEach(win => {
                 html += `<div style="background:rgba(241,196,15,0.1); border: 1px solid rgba(241,196,15,0.4); padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--warn-yellow);">
@@ -555,7 +555,7 @@ function render(data) {
         sensorList.innerHTML = html;
         
     } else if (currentView === 'geraete') {
-        let html = '<div style="display:flex; flex-direction:column; gap:8px; width:100%; max-width:500px; margin:0 auto;">';
+        let html = '<div style="display:flex; flex-direction:column; gap:8px; width:100%; max-width:420px; margin:0 auto;">';
         if (data.offlineDevices && data.offlineDevices.length > 0) {
             data.offlineDevices.forEach(dev => {
                 html += `<div style="background:rgba(255,71,133,0.1); border: 1px solid rgba(255,71,133,0.4); padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--alarm-red);">
@@ -577,7 +577,7 @@ function render(data) {
         sensorList.innerHTML = html;
         
     } else if (currentView === 'ereignisse') {
-        let html = '<div style="display:flex; flex-direction:column; gap:8px; width:100%; max-width:500px; margin:0 auto;">';
+        let html = '<div style="display:flex; flex-direction:column; gap:8px; width:100%; max-width:420px; margin:0 auto;">';
         if (data.activeEventsList && data.activeEventsList.length > 0) {
             data.activeEventsList.forEach(ev => {
                 html += `<div style="background:rgba(255,71,133,0.1); border: 1px solid rgba(255,71,133,0.4); padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--alarm-red);">
@@ -591,7 +591,7 @@ function render(data) {
         sensorList.innerHTML = html;
         
     } else if (currentView === 'lichter') {
-        let html = '<div style="display:flex; flex-direction:column; gap:12px; width:100%; max-width:500px; margin:0 auto;">';
+        let html = '<div style="display:flex; flex-direction:column; gap:12px; width:100%; max-width:420px; margin:0 auto;">';
         
         if (activeLights.length > 0) {
             html += `<div onclick="requestAction('TurnOffAllLights', true)" style="cursor:pointer; background:rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); padding: 12px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 14px; font-weight: bold; color: var(--content-color); transition: all 0.2s ease;">
