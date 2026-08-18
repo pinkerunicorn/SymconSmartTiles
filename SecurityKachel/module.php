@@ -3,16 +3,19 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../libs/Trait_DeviceAvailability.php';
+require_once __DIR__ . '/../libs/Trait_RegistryAware.php';
 
 class SecurityKachel extends IPSModuleStrict
 {
     use DeviceAvailability_Trait;
+    use RegistryAware_Trait;
 
     public function Create(): void
     {
         parent::Create();
         $this->SetVisualizationType(1); // Enable HTML-SDK Kachel-Visualisierung
         $this->RegisterPropertyInteger('TileType', 1); // Not used directly, just for compatibility
+        $this->RegisterPropertyInteger('RegistryID', 0);
         $this->RegisterPropertyInteger('DeviceRegistryID', 0);
         $this->RegisterPropertyInteger('SmartControllerID', 0);
         $this->DA_RegisterAvailability(900);
@@ -58,7 +61,7 @@ class SecurityKachel extends IPSModuleStrict
     private function RegisterMessageForSources(): void
     {
         // 1. SmartController Variablen registrieren
-        $shcId = $this->ReadPropertyInteger('SmartControllerID');
+        $shcId = $this->DR_GetControllerID();
         if ($shcId > 0 && IPS_InstanceExists($shcId)) {
             $presenceId = @IPS_GetObjectIDByIdent('PresenceMode', $shcId);
             if ($presenceId) $this->RegisterMessage($presenceId, VM_UPDATE);
@@ -68,7 +71,7 @@ class SecurityKachel extends IPSModuleStrict
         }
 
         // 2. DeviceRegistry Sensoren registrieren
-        $drId = $this->ReadPropertyInteger('DeviceRegistryID');
+        $drId = $this->DR_GetRegistryID();
         if ($drId > 0 && IPS_InstanceExists($drId)) {
             if (function_exists('SDR_GetDevicesByType')) {
                 $contacts = SDR_GetDevicesByType($drId, 'DevicesContactSensor');
@@ -130,7 +133,7 @@ class SecurityKachel extends IPSModuleStrict
         ];
 
         // 1. Fetch from SmartController
-        $shcId = $this->ReadPropertyInteger('SmartControllerID');
+        $shcId = $this->DR_GetControllerID();
         if ($shcId > 0 && IPS_InstanceExists($shcId)) {
             if (function_exists('SHC_GetPresenceMode')) {
                 $payload['presenceMode'] = SHC_GetPresenceMode($shcId);
@@ -148,7 +151,7 @@ class SecurityKachel extends IPSModuleStrict
         }
 
         // 2. Fetch from DeviceRegistry
-        $drId = $this->ReadPropertyInteger('DeviceRegistryID');
+        $drId = $this->DR_GetRegistryID();
         if ($drId > 0 && IPS_InstanceExists($drId) && function_exists('SDR_GetDevicesByType')) {
             $contacts = SDR_GetDevicesByType($drId, 'DevicesContactSensor');
             foreach ($contacts as $contact) {
@@ -270,7 +273,7 @@ class SecurityKachel extends IPSModuleStrict
         }
 
         if ($Ident === 'SetPresenceMode') {
-            $shcId = $this->ReadPropertyInteger('SmartControllerID');
+            $shcId = $this->DR_GetControllerID();
             if ($shcId > 0 && IPS_InstanceExists($shcId)) {
                 if (function_exists('SHC_SetPresenceMode')) {
                     SHC_SetPresenceMode($shcId, (int)$Value);
@@ -284,36 +287,4 @@ class SecurityKachel extends IPSModuleStrict
         }
     }
 
-    public function GetConfigurationForm(): string
-    {
-        $jsonForm = file_get_contents(__DIR__ . '/form.json');
-        $form = json_decode($jsonForm, true);
-
-        // Populate DeviceRegistry options
-        $drInstances = IPS_GetInstanceListByModuleID('{F3B4A7D9-C59E-401A-B826-17D3B5C2849E}');
-        $drOptions = [['caption' => '(Bitte auswählen)', 'value' => 0]];
-        foreach ($drInstances as $id) {
-            $drOptions[] = ['caption' => IPS_GetName($id), 'value' => $id];
-        }
-        
-        // Populate SmartController options
-        $shcInstances = IPS_GetInstanceListByModuleID('{460D7C60-0766-4534-BFD8-5920737B1845}');
-        $shcOptions = [['caption' => '(Bitte auswählen)', 'value' => 0]];
-        foreach ($shcInstances as $id) {
-            $shcOptions[] = ['caption' => IPS_GetName($id), 'value' => $id];
-        }
-
-        if (isset($form['elements']) && is_array($form['elements'])) {
-            foreach ($form['elements'] as &$element) {
-                if ($element['name'] === 'DeviceRegistryID') {
-                    $element['options'] = $drOptions;
-                }
-                if ($element['name'] === 'SmartControllerID') {
-                    $element['options'] = $shcOptions;
-                }
-            }
-        }
-
-        return json_encode($form);
-    }
 }
