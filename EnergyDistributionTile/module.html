@@ -210,7 +210,7 @@
                 tspanValue.setAttribute("x", cx);
                 tspanValue.setAttribute("dy", 20);
                 tspanValue.setAttribute("class", "label-value");
-                tspanValue.textContent = Math.round((consumer.consumption || 0) * 1000) + " Wh";
+                tspanValue.textContent = formatEnergy(consumer.consumption || 0);
                 textGroup.appendChild(tspanValue);
                 
                 if (hasCost) {
@@ -257,7 +257,7 @@
             cVal.setAttribute("x", CENTER_X);
             cVal.setAttribute("dy", 22);
             cVal.setAttribute("class", "central-label-value");
-            cVal.textContent = Math.round((config.house.consumption || 0) * 1000) + " Wh";
+            cVal.textContent = formatEnergy(config.house.consumption || 0);
             centerTextGroup.appendChild(cVal);
             
             if (config.house.cost !== undefined && config.house.cost !== null) {
@@ -273,6 +273,14 @@
             layerNodes.appendChild(centerGroup);
 
             container.appendChild(svg);
+        }
+
+        function formatEnergy(kWh) {
+            if (!kWh) return "0 Wh";
+            if (kWh < 1.0) {
+                return Math.round(kWh * 1000) + " Wh";
+            }
+            return kWh.toFixed(2) + " kWh";
         }
 
         function updateUI() {

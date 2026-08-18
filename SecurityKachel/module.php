@@ -224,9 +224,13 @@ class SecurityKachel extends IPSModuleStrict
                     if ($val > 0 || $val === true) {
                         $room = trim((string)($light['room'] ?? ''));
                         $name = trim((string)($light['name'] ?? 'Licht'));
+                        
+                        $words = array_filter(explode(' ', $room . ' ' . $name));
+                        $cleanName = implode(' ', array_unique($words));
+                        
                         $activeLights[] = [
                             'id' => $vid,
-                            'name' => ($room !== '' ? $room . ' ' : '') . $name
+                            'name' => $cleanName
                         ];
                     }
                 }
@@ -266,7 +270,11 @@ class SecurityKachel extends IPSModuleStrict
                 if (is_array($allDevices)) {
                     foreach ($allDevices as $dev) {
                         if (!($dev['enabled'] ?? true)) continue;
-                        $devName = ($dev['room'] ?? '') . ' / ' . ($dev['name'] ?? '?');
+                        
+                        $room = trim((string)($dev['room'] ?? ''));
+                        $name = trim((string)($dev['name'] ?? '?'));
+                        $words = array_filter(explode(' ', $room . ' ' . $name));
+                        $devName = implode(' ', array_unique($words));
                         
                         // Battery check
                         $batVid = (int)($dev['Battery_VarID'] ?? 0);
