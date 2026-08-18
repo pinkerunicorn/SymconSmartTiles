@@ -234,8 +234,12 @@ class SecurityKachel extends IPSModuleStrict
             $payload['activeLights'] = $activeLights;
         }
 
-        // 3. Fetch from SmartMonitorDevice
+        // 3. Fetch from SmartMonitorDevice / DeviceRegistry (for clean lists)
         $smdIds = IPS_GetInstanceListByModuleID('{4574D58D-2DC0-4E16-92DC-16D9CD27D014}');
+        $payload['lowBatteries'] = [];
+        $payload['offlineDevices'] = [];
+        $payload['deviceIssuesCount'] = 0;
+        
         if (count($smdIds) > 0) {
             $smdId = $smdIds[0];
             $lowBatId = @IPS_GetObjectIDByIdent('LowBatteryCount', $smdId);
@@ -248,9 +252,66 @@ class SecurityKachel extends IPSModuleStrict
             if ($orphanId) $issues += GetValue($orphanId);
             $payload['deviceIssuesCount'] = $issues;
             
-            $summaryId = @IPS_GetObjectIDByIdent('SummaryText', $smdId);
-            if ($summaryId) {
-                $payload['deviceSummaryText'] = GetValue($summaryId);
+            // To get clean lists, we parse the VisualizationValue of SmartMonitorDevice
+            $smdPayload = @json_decode(GetValue(@IPS_GetObjectIDByIdent('MonitoredListHTML', $smdId) ?: 0), true);
+            // Wait, MonitoredListHTML is HTML. SmartMonitorDevice pushes a JSON payload via UpdateVisualizationValue!
+            // Let's just do a quick scan ourselves from the registry, or use deviceSummaryText to extract.
+            // But since SecurityKachel has the DR ID, we can just do the check here!
+            $threshold = 15;
+            $thresholdVid = @IPS_GetProperty($smdId, 'LowBatteryThreshold');
+            if ($thresholdVid !== false) $threshold = $thresholdVid;
+            
+            if ($drId > 0 && IPS_InstanceExists($drId) && function_exists('SDR_GetDevices')) {
+                $allDevices = SDR_GetDevices($drId);
+                if (is_array($allDevices)) {
+                    foreach ($allDevices as $dev) {
+                        if (!($dev['enabled'] ?? true)) continue;
+                        $devName = ($dev['room'] ?? '') . ' / ' . ($dev['name'] ?? '?');
+                        
+                        // Battery check
+                        $batVid = (int)($dev['Battery_VarID'] ?? 0);
+                        if ($batVid > 0 && IPS_VariableExists($batVid)) {
+                            $val = GetValue($batVid);
+                            $isLow = false;
+                            if (is_bool($val) && $val === true) {
+                                $isLow = true;
+                            } elseif (is_numeric($val)) {
+                                if ((float)$val < $threshold) {
+                                    $isLow = true;
+                                }
+                            }
+                            if ($isLow) $payload['lowBatteries'][] = $devName;
+                        }
+                        
+                        // Reachability check
+                        $reachVid = (int)($dev['Reachable_VarID'] ?? 0);
+                        if ($reachVid > 0 && IPS_VariableExists($reachVid)) {
+                            $val = GetValue($reachVid);
+                            $ident = strtoupper(IPS_GetObject($reachVid)['ObjectIdent']);
+                            $name = strtoupper(IPS_GetName($reachVid));
+                            $formatted = strtolower(GetValueFormatted($reachVid));
+                            $isOffline = false;
+                            
+                            if (strpos($formatted, 'offline') !== false || strpos($formatted, 'nicht erreichbar') !== false || strpos($formatted, 'unreach') !== false || strpos($formatted, 'fehler') !== false) {
+                                $isOffline = true;
+                            } elseif (is_bool($val)) {
+                                $isPositiveLogic = (strpos($ident, 'AVAILABLE') !== false || strpos($ident, 'ONLINE') !== false || strpos($ident, 'CONNECTED') !== false || strpos($name, 'STATUS') !== false || strpos($ident, 'STATE') !== false || strpos($ident, 'STATUS') !== false);
+                                $isNegativeLogic = (strpos($ident, 'UNREACH') !== false || strpos($ident, 'OFFLINE') !== false || strpos($ident, 'ERROR') !== false || strpos($ident, 'FAILURE') !== false);
+                                
+                                if ($isPositiveLogic) {
+                                    $isOffline = ($val === false);
+                                } elseif ($isNegativeLogic) {
+                                    $isOffline = ($val === true);
+                                } else {
+                                    $isOffline = ($val === false);
+                                }
+                            } elseif (is_string($val) && strtolower($val) === 'offline') {
+                                $isOffline = true;
+                            }
+                            if ($isOffline) $payload['offlineDevices'][] = $devName;
+                        }
+                    }
+                }
             }
         }
 
