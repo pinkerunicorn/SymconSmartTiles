@@ -76,8 +76,11 @@ class SecurityKachel extends IPSModuleStrict
             if (function_exists('SDR_GetDevicesByType')) {
                 $contacts = SDR_GetDevicesByType($drId, 'DevicesContactSensor');
                 $motions = SDR_GetDevicesByType($drId, 'DevicesMotionSensor');
+                $lights = SDR_GetDevicesByType($drId, 'DevicesLight');
+                $dimmers = SDR_GetDevicesByType($drId, 'DevicesLightDimmer');
+                $colors = SDR_GetDevicesByType($drId, 'DevicesLightColor');
                 
-                $allDevices = array_merge($contacts, $motions);
+                $allDevices = array_merge($contacts, $motions, $lights, $dimmers, $colors);
                 foreach ($allDevices as $device) {
                     if (!($device['enabled'] ?? true)) continue;
                     if (!empty($device['ExcludeFromAlarm'])) continue;
@@ -86,6 +89,7 @@ class SecurityKachel extends IPSModuleStrict
                     if (!empty($device['OpenClose_VarID'])) $varId = (int)$device['OpenClose_VarID'];
                     else if (!empty($device['Status_VarID'])) $varId = (int)$device['Status_VarID'];
                     else if (!empty($device['OnOff_VarID'])) $varId = (int)$device['OnOff_VarID'];
+                    else if (!empty($device['Brightness_VarID'])) $varId = (int)$device['Brightness_VarID'];
                     
                     if ($varId > 0 && IPS_VariableExists($varId)) {
                         $this->RegisterMessage($varId, VM_UPDATE);
@@ -201,6 +205,33 @@ class SecurityKachel extends IPSModuleStrict
                     }
                 }
             }
+
+            $lights = SDR_GetDevicesByType($drId, 'DevicesLight');
+            $dimmers = SDR_GetDevicesByType($drId, 'DevicesLightDimmer');
+            $colors = SDR_GetDevicesByType($drId, 'DevicesLightColor');
+            $allLights = array_merge($lights, $dimmers, $colors);
+            
+            $activeLights = [];
+            foreach ($allLights as $light) {
+                if (!($light['enabled'] ?? true)) continue;
+                
+                $vid = 0;
+                $isDimmer = ($light['Type'] === 'DevicesLightDimmer');
+                $vid = $isDimmer ? (int)($light['Brightness_VarID'] ?? 0) : (int)($light['OnOff_VarID'] ?? $light['Status_VarID'] ?? 0);
+                
+                if ($vid > 0 && IPS_VariableExists($vid)) {
+                    $val = GetValue($vid);
+                    if ($val > 0 || $val === true) {
+                        $room = trim((string)($light['room'] ?? ''));
+                        $name = trim((string)($light['name'] ?? 'Licht'));
+                        $activeLights[] = [
+                            'id' => $vid,
+                            'name' => ($room !== '' ? $room . ' ' : '') . $name
+                        ];
+                    }
+                }
+            }
+            $payload['activeLights'] = $activeLights;
         }
 
         // 3. Fetch from SmartMonitorDevice
@@ -287,6 +318,49 @@ class SecurityKachel extends IPSModuleStrict
                     }
                 }
             }
+        }
+        if ($Ident === 'ToggleLight') {
+            $vid = (int)$Value;
+            if ($vid > 0 && IPS_VariableExists($vid)) {
+                $varInfo = IPS_GetVariable($vid);
+                if ($varInfo['VariableType'] == 1) { // Integer (Dimmer)
+                    $current = GetValue($vid);
+                    RequestAction($vid, $current > 0 ? 0 : 100);
+                } else if ($varInfo['VariableType'] == 0) { // Boolean
+                    RequestAction($vid, !GetValue($vid));
+                }
+            }
+            return;
+        }
+
+        if ($Ident === 'TurnOffAllLights') {
+            $drId = $this->DR_GetRegistryID();
+            if ($drId > 0 && IPS_InstanceExists($drId) && function_exists('SDR_GetDevicesByType')) {
+                $lights = SDR_GetDevicesByType($drId, 'DevicesLight');
+                $dimmers = SDR_GetDevicesByType($drId, 'DevicesLightDimmer');
+                $colors = SDR_GetDevicesByType($drId, 'DevicesLightColor');
+                $allLights = array_merge($lights, $dimmers, $colors);
+                
+                foreach ($allLights as $light) {
+                    if (!($light['enabled'] ?? true)) continue;
+                    
+                    $isDimmer = ($light['Type'] === 'DevicesLightDimmer');
+                    $vid = $isDimmer ? (int)($light['Brightness_VarID'] ?? 0) : (int)($light['OnOff_VarID'] ?? $light['Status_VarID'] ?? 0);
+                    
+                    if ($vid > 0 && IPS_VariableExists($vid)) {
+                        $val = GetValue($vid);
+                        if ($val > 0 || $val === true) {
+                            $varInfo = IPS_GetVariable($vid);
+                            if ($varInfo['VariableType'] == 1) {
+                                RequestAction($vid, 0);
+                            } else if ($varInfo['VariableType'] == 0) {
+                                RequestAction($vid, false);
+                            }
+                        }
+                    }
+                }
+            }
+            return;
         }
     }
 

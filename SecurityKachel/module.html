@@ -334,6 +334,16 @@ html, body {
                     </div>
                     <div class="bubble-label">Ereignisse</div>
                 </div>
+                <!-- Lichter -->
+                <div class="bubble-box" onclick="requestAction('TurnOffAllLights', true)" style="cursor: pointer;">
+                    <div id="lightContainer" class="shield-container safe">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.3 1.5 1.5 2.5"></path>
+                            <path d="M9 18h6"></path><path d="M10 22h4"></path>
+                        </svg>
+                    </div>
+                    <div class="bubble-label">Licht</div>
+                </div>
             </div>
             
             <div id="sensorList" class="sensor-list">
@@ -402,6 +412,28 @@ function render(data) {
         eventContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>';
     }
 
+    const lightContainer = document.getElementById('lightContainer');
+    lightContainer.className = 'shield-container';
+
+    let activeLights = data.activeLights || [];
+    let lightsCount = activeLights.length;
+
+    // 4. Licht
+    if (lightsCount > 0) {
+        lightContainer.classList.add('warn');
+        lightContainer.innerHTML = `<div class="bubble-count" style="color:var(--warn-yellow)">${lightsCount}</div>`;
+    } else {
+        lightContainer.classList.add('safe');
+        lightContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>';
+    }
+
+    // Tooltip für Licht
+    if (lightsCount > 0) {
+        lightContainer.parentElement.title = "Aktive Lampen (Klicken, um alle auszuschalten):\n- " + activeLights.map(l => l.name).join("\n- ");
+    } else {
+        lightContainer.parentElement.title = "Alle Lampen sind aus";
+    }
+
     // ── ZUSTAND TOOLTIP ──
     let zustandTooltip = [];
     if (data.openWindows && data.openWindows.length > 0) {
@@ -422,14 +454,30 @@ function render(data) {
         eventContainer.parentElement.title = "Keine aktiven Ereignisse";
     }
 
-    // ── LATEST LOGS ──
+    // ── LATEST LOGS & LIGHTS ──
     sensorList.innerHTML = '';
-    sensorList.style.flexDirection = 'column';
-    sensorList.style.gap = '8px';
-    sensorList.style.alignItems = 'stretch';
-    sensorList.style.width = '100%';
-    sensorList.style.maxWidth = '500px';
-    sensorList.style.margin = '0 auto';
+    
+    // First: Active lights as pills that can be clicked to turn off
+    if (activeLights.length > 0) {
+        let lightsHtml = '<div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:15px; width:100%;">';
+        activeLights.forEach(light => {
+            lightsHtml += `<div class="sensor-pill warn" style="cursor:pointer;" onclick="requestAction('ToggleLight', ${light.id})" title="Klicken zum Ausschalten">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>
+                ${light.name}
+            </div>`;
+        });
+        lightsHtml += '</div>';
+        sensorList.innerHTML += lightsHtml;
+    }
+
+    let logsContainer = document.createElement('div');
+    logsContainer.style.display = 'flex';
+    logsContainer.style.flexDirection = 'column';
+    logsContainer.style.gap = '8px';
+    logsContainer.style.alignItems = 'stretch';
+    logsContainer.style.width = '100%';
+    logsContainer.style.maxWidth = '500px';
+    logsContainer.style.margin = '0 auto';
     
     if (data.latestLogs && data.latestLogs.length > 0) {
         data.latestLogs.forEach(log => {
@@ -457,7 +505,7 @@ function render(data) {
             
             let timeStr = new Date(log.t * 1000).toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'});
             
-            sensorList.innerHTML += `
+            logsContainer.innerHTML += `
                 <div style="background:${color}; border: 1px solid ${borderColor}; padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 13px;">
                     <span style="font-size: 16px;">${icon}</span>
                     <span style="opacity:0.5; font-size: 11px; min-width: 45px;">${timeStr}</span>
@@ -467,7 +515,7 @@ function render(data) {
             `;
         });
     } else {
-        sensorList.innerHTML = `
+        logsContainer.innerHTML = `
             <div style="background:rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-align: center; font-size: 13px; color: var(--content-color); opacity: 0.5;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:block; margin: 0 auto 8px auto; opacity: 0.5;">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -476,6 +524,8 @@ function render(data) {
             </div>
         `;
     }
+    
+    sensorList.appendChild(logsContainer);
 }
 
 function setMode(mode) {
