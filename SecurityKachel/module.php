@@ -79,6 +79,7 @@ class SecurityKachel extends IPSModuleStrict
                 
                 $allDevices = array_merge($contacts, $motions);
                 foreach ($allDevices as $device) {
+                    if (!($device['enabled'] ?? true)) continue;
                     if (!empty($device['ExcludeFromAlarm'])) continue;
                     
                     $varId = 0;
@@ -155,6 +156,7 @@ class SecurityKachel extends IPSModuleStrict
         if ($drId > 0 && IPS_InstanceExists($drId) && function_exists('SDR_GetDevicesByType')) {
             $contacts = SDR_GetDevicesByType($drId, 'DevicesContactSensor');
             foreach ($contacts as $contact) {
+                if (!($contact['enabled'] ?? true)) continue;
                 if (!empty($contact['ExcludeFromAlarm'])) continue;
 
                 $varId = 0;
@@ -188,6 +190,7 @@ class SecurityKachel extends IPSModuleStrict
 
             $motions = SDR_GetDevicesByType($drId, 'DevicesMotionSensor');
             foreach ($motions as $motion) {
+                if (!($motion['enabled'] ?? true)) continue;
                 $varId = 0;
                 if (!empty($motion['Status_VarID'])) $varId = (int)$motion['Status_VarID'];
                 else if (!empty($motion['OnOff_VarID'])) $varId = (int)$motion['OnOff_VarID'];
