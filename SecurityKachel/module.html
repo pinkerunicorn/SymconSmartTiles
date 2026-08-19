@@ -5,28 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 /* ═══════════════════════════════════════════════════════════
-   SECURITY KACHEL – IP-Symcon HTML-SDK (PREMIUM DESIGN)
+   SECURITY KACHEL – IP-Symcon HTML-SDK
    ═══════════════════════════════════════════════════════════ */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    --card-color: #1e1e2e;
     --content-color: #cdd6f4;
-    --accent-color: #ff4785; /* Hot Pink */
-    --bg-color: #181825;
-    
-    --safe-green: #00b894;
-    --warn-yellow: #f1c40f;
-    --alarm-red: #ff4785;
-    
-    --glass-bg: rgba(255,255,255,0.03);
-    --glass-border: rgba(255,255,255,0.06);
+    --safe-green:    #00b894;
+    --warn-yellow:   #f1c40f;
+    --alarm-red:     #ff4785;
+    --motion-blue:   #74b9ff;
+    --glass-bg:      rgba(255,255,255,0.03);
+    --glass-border:  rgba(255,255,255,0.06);
 }
 
 html, body {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     background: transparent;
     color: var(--content-color);
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -34,266 +29,107 @@ html, body {
 }
 
 .tile-wrapper {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 30px 20px 20px 20px;
+    padding: 30px 20px 20px;
     overflow-y: auto;
 }
 
 .tile-content {
-    width: 100%;
-    max-width: 600px;
-    display: flex;
-    flex-direction: column;
-    gap: 35px;
+    width: 100%; max-width: 600px;
+    display: flex; flex-direction: column; gap: 28px;
 }
 
-/* ── HEADER ── */
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 5px;
-    border-bottom: 1px solid var(--glass-border);
+/* ── BUBBLES ── */
+.bubbles-row {
+    display: flex; gap: 12px; justify-content: center; width: 100%;
 }
-
-.header-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 16px;
-    font-weight: 600;
+.bubble-box {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    flex: 1; max-width: 100px; cursor: pointer;
 }
-
-.header-title svg {
-    width: 20px;
-    height: 20px;
-    color: var(--content-color);
+.bubble-label {
+    font-size: 11px; opacity: 0.6;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    text-align: center; white-space: nowrap;
 }
-
-.status-badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    transition: all 0.5s ease;
-}
-
-.status-badge.safe {
-    background: rgba(0, 184, 148, 0.15);
-    color: var(--safe-green);
-    border-color: rgba(0, 184, 148, 0.3);
-}
-
-.status-badge.warn {
-    background: rgba(241, 196, 15, 0.15);
-    color: var(--warn-yellow);
-    border-color: rgba(241, 196, 15, 0.3);
-    box-shadow: 0 0 10px rgba(241, 196, 15, 0.2);
-}
-
-.status-badge.alarm {
-    background: rgba(255, 71, 133, 0.15);
-    color: var(--alarm-red);
-    border-color: rgba(255, 71, 133, 0.3);
-    box-shadow: 0 0 10px rgba(255, 71, 133, 0.3);
-}
-
-/* ── HAUPTBEREICH (Schild) ── */
-.main-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 25px;
+.bubble-count {
+    font-size: clamp(22px, 30cqw, 38px);
+    font-weight: 700; line-height: 1;
 }
 
 .shield-container {
     position: relative;
-    width: 100%;
-    max-width: 100px;
-    aspect-ratio: 1 / 1;
+    width: 100%; aspect-ratio: 1/1;
     border-radius: 50%;
     background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
-    box-shadow: 
-        inset 0 0 15px rgba(0,0,0,0.5),
-        0 10px 20px rgba(0,0,0,0.3),
-        0 0 0 1px rgba(255,255,255,0.05);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.5s ease;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.5), 0 8px 16px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.4s ease;
     container-type: inline-size;
-    cursor: help;
 }
+.shield-container svg { width: 45cqw; height: auto; color: var(--content-color); opacity: 0.5; transition: all 0.4s ease; }
 
-.shield-container svg {
-    width: 45cqw;
-    height: auto;
-    color: var(--content-color);
-    opacity: 0.5;
-    transition: all 0.5s ease;
-}
+.shield-container.safe   { box-shadow: inset 0 0 20px rgba(0,184,148,0.1), 0 8px 16px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,184,148,0.2); }
+.shield-container.safe svg { color: var(--safe-green); opacity: 0.8; }
 
-.shield-container.safe {
-    box-shadow: 
-        inset 0 0 20px rgba(0,184,148,0.1),
-        0 10px 20px rgba(0,0,0,0.3),
-        0 0 0 1px rgba(0,184,148,0.2);
-}
-.shield-container.safe svg {
-    color: var(--safe-green);
-    opacity: 0.8;
-}
+.shield-container.warn   { box-shadow: inset 0 0 20px rgba(241,196,15,0.2), 0 0 25px rgba(241,196,15,0.2), 0 0 0 1px rgba(241,196,15,0.4); }
+.shield-container.warn svg { color: var(--warn-yellow); opacity: 1; filter: drop-shadow(0 0 4px var(--warn-yellow)); }
 
-.shield-container.warn {
-    box-shadow: 
-        inset 0 0 20px rgba(241,196,15,0.2),
-        0 0 30px rgba(241,196,15,0.2),
-        0 0 0 1px rgba(241,196,15,0.4);
-}
-.shield-container.warn svg {
-    color: var(--warn-yellow);
-    opacity: 1;
-    filter: drop-shadow(0 0 5px var(--warn-yellow));
-}
+.shield-container.motion { box-shadow: inset 0 0 20px rgba(116,185,255,0.2), 0 0 25px rgba(116,185,255,0.15), 0 0 0 1px rgba(116,185,255,0.4); }
+.shield-container.motion svg { color: var(--motion-blue); opacity: 1; }
 
-.shield-container.alarm {
-    box-shadow: 
-        inset 0 0 20px rgba(255,71,133,0.3),
-        0 0 30px rgba(255,71,133,0.4),
-        0 0 0 1px rgba(255,71,133,0.5);
-    animation: pulse-alarm 1s infinite alternate;
-}
-.shield-container.alarm svg {
-    color: var(--alarm-red);
-    opacity: 1;
-    filter: drop-shadow(0 0 8px var(--alarm-red));
-}
+.shield-container.alarm  { box-shadow: inset 0 0 20px rgba(255,71,133,0.3), 0 0 30px rgba(255,71,133,0.4), 0 0 0 1px rgba(255,71,133,0.5); animation: pulse-alarm 1s infinite alternate; }
+.shield-container.alarm svg { color: var(--alarm-red); opacity: 1; filter: drop-shadow(0 0 6px var(--alarm-red)); }
+
+.shield-container.active-view { box-shadow: 0 0 0 2px rgba(255,255,255,0.35) !important; }
 
 @keyframes pulse-alarm {
-    0% { transform: scale(1); box-shadow: inset 0 0 20px rgba(255,71,133,0.3), 0 0 20px rgba(255,71,133,0.3); }
+    0%   { transform: scale(1);    box-shadow: inset 0 0 20px rgba(255,71,133,0.3), 0 0 20px rgba(255,71,133,0.3); }
     100% { transform: scale(1.05); box-shadow: inset 0 0 30px rgba(255,71,133,0.5), 0 0 40px rgba(255,71,133,0.6); }
 }
 
-.bubbles-row {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    width: 100%;
-}
-.bubble-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    flex: 1;
-    max-width: 100px;
-    cursor: help;
-}
-.bubble-label {
-    font-size: 13px;
-    opacity: 0.7;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    text-align: center;
-    white-space: nowrap;
-}
-.bubble-count {
-    font-size: clamp(24px, 35cqw, 40px);
-    font-weight: 700;
-    line-height: 1;
+/* ── DETAIL LIST ── */
+#detailArea { width: 100%; }
+
+.detail-list {
+    display: flex; flex-direction: column; gap: 8px;
+    width: 100%; max-width: 440px; margin: 0 auto;
 }
 
-/* ── SENSOR LISTE (Pills) ── */
-.sensor-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
-    width: 100%;
+.detail-row {
+    padding: 10px 14px; border-radius: 10px;
+    display: flex; align-items: center; gap: 12px; font-size: 14px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+}
+.detail-row.alarm  { background: rgba(255,71,133,0.1);  border-color: rgba(255,71,133,0.4);  color: var(--alarm-red); }
+.detail-row.warn   { background: rgba(241,196,15,0.1);  border-color: rgba(241,196,15,0.4);  color: var(--warn-yellow); }
+.detail-row.motion { background: rgba(116,185,255,0.1); border-color: rgba(116,185,255,0.4); color: var(--motion-blue); }
+.detail-row.safe   { background: rgba(0,184,148,0.08);  border-color: rgba(0,184,148,0.2);   color: var(--safe-green); }
+.detail-row.log    { font-size: 13px; }
+
+.empty-state {
+    text-align: center; padding: 20px; opacity: 0.5;
+    color: var(--safe-green); font-size: 13px;
 }
 
-.sensor-pill {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.sensor-pill.warn {
-    border-color: rgba(241, 196, 15, 0.4);
-    background: rgba(241, 196, 15, 0.1);
-    color: var(--warn-yellow);
-}
-.sensor-pill.alarm {
-    border-color: rgba(255, 71, 133, 0.4);
-    background: rgba(255, 71, 133, 0.1);
-    color: var(--alarm-red);
-}
-.sensor-pill.safe {
-    border-color: rgba(0, 184, 148, 0.2);
-    color: var(--safe-green);
-}
-
-/* ── CONTROLS ── */
-.controls-area {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: auto;
-}
-
-.control-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: 0.5;
-    margin-left: 5px;
-}
-
+/* ── MODE SWITCHER ── */
+.mode-section { display: flex; flex-direction: column; gap: 8px; }
+.mode-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4; margin-left: 4px; }
 .mode-switcher {
-    display: flex;
-    background: rgba(0,0,0,0.2);
-    border-radius: 10px;
-    padding: 4px;
-    width: 100%;
+    display: flex; background: rgba(0,0,0,0.25);
+    border-radius: 10px; padding: 4px; width: 100%;
 }
-
 .mode-btn {
-    flex: 1;
-    padding: 8px 0;
-    text-align: center;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--content-color);
-    opacity: 0.6;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    flex: 1; padding: 8px 0; text-align: center;
+    border-radius: 8px; font-size: 12px; font-weight: 500;
+    color: var(--content-color); opacity: 0.55; cursor: pointer;
+    transition: all 0.25s ease;
 }
-
-.mode-btn:hover {
-    opacity: 0.8;
-    background: rgba(255,255,255,0.05);
-}
-
-.mode-btn.active {
-    opacity: 1;
-    background: var(--glass-bg);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    border: 1px solid var(--glass-border);
-}
+.mode-btn:hover  { opacity: 0.8; background: rgba(255,255,255,0.05); }
+.mode-btn.active { opacity: 1; background: var(--glass-bg); border: 1px solid var(--glass-border); }
 
 </style>
 </head>
@@ -301,14 +137,13 @@ html, body {
 
 <div class="tile-wrapper">
     <div class="tile-content">
-        
-        <!-- Header removed per user request -->
 
-        <div class="main-area">
+        <!-- Bubble-Row -->
+        <div style="display:flex; flex-direction:column; gap:16px; align-items:center;">
             <div class="bubbles-row">
-                <!-- Zustand -->
+                <!-- Zustand (Schild) -->
                 <div class="bubble-box" onclick="setView('zustand')">
-                    <div id="shieldContainer" class="shield-container safe">
+                    <div id="bubbleZustand" class="shield-container safe">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                             <path d="M9 12l2 2 4-4"></path>
@@ -316,40 +151,53 @@ html, body {
                     </div>
                     <div class="bubble-label">Zustand</div>
                 </div>
-                <!-- Geräte (Smart Monitor) -->
+                <!-- Bewegung -->
+                <div class="bubble-box" onclick="setView('motion')">
+                    <div id="bubbleMotion" class="shield-container safe">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="13" cy="4" r="1"></circle>
+                            <path d="M7 21l3-6 2 3 2-4 3 7"></path>
+                            <path d="M5 12l3-3 2 2 3-4"></path>
+                        </svg>
+                    </div>
+                    <div class="bubble-label">Bewegung</div>
+                </div>
+                <!-- Geraete -->
                 <div class="bubble-box" onclick="setView('geraete')">
-                    <div id="deviceContainer" class="shield-container safe">
+                    <div id="bubbleGeraete" class="shield-container safe">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M4 11v2h16v-2H4zm-2 4v2h20v-2H2zm4-8v2h12V7H6z"></path>
+                            <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                            <path d="M8 21h8M12 17v4"></path>
                         </svg>
                     </div>
-                    <div class="bubble-label">Geräte</div>
+                    <div class="bubble-label">Geraete</div>
                 </div>
-                <!-- Ereignisse (Smart Monitor) -->
-                <div class="bubble-box" onclick="setView('ereignisse')">
-                    <div id="eventContainer" class="shield-container safe">
+                <!-- Alarme -->
+                <div class="bubble-box" onclick="setView('alarme')">
+                    <div id="bubbleAlarme" class="shield-container safe">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                         </svg>
                     </div>
-                    <div class="bubble-label">Ereignisse</div>
+                    <div class="bubble-label">Alarme</div>
                 </div>
-                <!-- Lichter -->
-                <div class="bubble-box" onclick="setView('lichter')">
-                    <div id="lightContainer" class="shield-container safe">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.3 1.5 1.5 2.5"></path>
-                            <path d="M9 18h6"></path><path d="M10 22h4"></path>
-                        </svg>
-                    </div>
-                    <div class="bubble-label">Licht</div>
-                </div>
-            </div>
-            
-            <div id="sensorList" class="sensor-list">
-                <!-- Dynamic Content -->
             </div>
         </div>
+
+        <!-- Detail-Bereich -->
+        <div id="detailArea"></div>
+
+        <!-- Presence Mode Switcher -->
+        <div class="mode-section">
+            <div class="mode-label">Anwesenheit</div>
+            <div class="mode-switcher">
+                <div id="modeBtn0" class="mode-btn" onclick="setMode(0)">Zuhause</div>
+                <div id="modeBtn1" class="mode-btn" onclick="setMode(1)">Abwesend</div>
+                <div id="modeBtn2" class="mode-btn" onclick="setMode(2)">Urlaub</div>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -358,269 +206,180 @@ let currentView = 'overview';
 let lastData = null;
 
 function setView(view) {
-    if (currentView === view) {
-        currentView = 'overview';
-    } else {
-        currentView = view;
-    }
+    currentView = (currentView === view) ? 'overview' : view;
     if (lastData) render(lastData);
-}
-
-function handleMessage(data) {
-    if (!data) return;
-    try {
-        const parsed = JSON.parse(data);
-        render(parsed);
-    } catch (e) {
-        console.error("JSON Parse Error:", e);
-    }
-}
-
-function render(data) {
-    lastData = data;
-    
-    const shieldContainer = document.getElementById('shieldContainer');
-    const deviceContainer = document.getElementById('deviceContainer');
-    const eventContainer = document.getElementById('eventContainer');
-    const sensorList = document.getElementById('sensorList');
-    
-    // Reset Classes
-    shieldContainer.className = 'shield-container';
-    deviceContainer.className = 'shield-container';
-    eventContainer.className = 'shield-container';
-    
-    let isAlarm = data.alarmLevel > 0;
-    let openCount = (data.openWindows || []).length;
-    let motionCount = (data.activeMotions || []).length;
-    
-    let deviceIssues = data.deviceIssuesCount || 0;
-    let events = data.activeEventsCount || 0;
-    
-    // 1. Zustand (Shield)
-    if (isAlarm) {
-        shieldContainer.classList.add('alarm');
-        shieldContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
-    } else if (openCount > 0 || motionCount > 0) {
-        shieldContainer.classList.add('warn');
-        shieldContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
-    } else {
-        shieldContainer.classList.add('safe');
-        shieldContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>';
-    }
-
-    // 2. Geräte (Smart Monitor)
-    if (deviceIssues > 0) {
-        deviceContainer.classList.add('warn');
-        deviceContainer.innerHTML = `<div class="bubble-count" style="color:var(--warn-yellow)">${deviceIssues}</div>`;
-    } else {
-        deviceContainer.classList.add('safe');
-        deviceContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11v2h16v-2H4zm-2 4v2h20v-2H2zm4-8v2h12V7H6z"></path></svg>';
-    }
-
-    // 3. Ereignisse (Smart Monitor)
-    if (events > 0) {
-        eventContainer.classList.add('alarm');
-        eventContainer.innerHTML = `<div class="bubble-count" style="color:var(--alarm-red)">${events}</div>`;
-    } else {
-        eventContainer.classList.add('safe');
-        eventContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>';
-    }
-
-    const lightContainer = document.getElementById('lightContainer');
-    lightContainer.className = 'shield-container';
-
-    let activeLights = data.activeLights || [];
-    let lightsCount = activeLights.length;
-
-    // 4. Licht
-    if (lightsCount > 0) {
-        lightContainer.classList.add('warn');
-        lightContainer.innerHTML = `<div class="bubble-count" style="color:var(--warn-yellow)">${lightsCount}</div>`;
-    } else {
-        lightContainer.classList.add('safe');
-        lightContainer.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>';
-    }
-
-    // Reset Box Shadows
-    shieldContainer.style.boxShadow = '';
-    deviceContainer.style.boxShadow = '';
-    eventContainer.style.boxShadow = '';
-    lightContainer.style.boxShadow = '';
-
-    // Highlight current view
-    if (currentView === 'zustand') shieldContainer.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.4)';
-    if (currentView === 'geraete') deviceContainer.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.4)';
-    if (currentView === 'ereignisse') eventContainer.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.4)';
-    if (currentView === 'lichter') lightContainer.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.4)';
-
-    // Tooltips
-    shieldContainer.parentElement.title = "Klicken für Fenster & Bewegungen";
-    deviceContainer.parentElement.title = "Klicken für Offline- & Batterie-Meldungen";
-    eventContainer.parentElement.title = "Klicken für aktive Ereignisse";
-    lightContainer.parentElement.title = "Klicken für Lichter-Übersicht";
-
-    // ── RENDER DETAILS ──
-    sensorList.innerHTML = '';
-    
-    if (currentView === 'overview') {
-        // Render Active Lights Pills (if any) and then Logs
-        if (activeLights.length > 0) {
-            let lightsHtml = '<div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:15px; width:100%;">';
-            activeLights.forEach(light => {
-                lightsHtml += `<div class="sensor-pill warn" style="cursor:pointer;" onclick="requestAction('ToggleLight', ${light.id})" title="Klicken zum Ausschalten">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>
-                    ${light.name}
-                </div>`;
-            });
-            lightsHtml += '</div>';
-            sensorList.innerHTML += lightsHtml;
-        }
-
-        let logsContainer = document.createElement('div');
-        logsContainer.style.display = 'flex';
-        logsContainer.style.flexDirection = 'column';
-        logsContainer.style.gap = '8px';
-        logsContainer.style.alignItems = 'stretch';
-        logsContainer.style.width = '100%';
-        logsContainer.style.maxWidth = '420px';
-        logsContainer.style.margin = '0 auto';
-        
-        if (data.latestLogs && data.latestLogs.length > 0) {
-            data.latestLogs.forEach(log => {
-                let color = 'rgba(255,255,255,0.03)';
-                let textColor = 'var(--content-color)';
-                let borderColor = 'var(--glass-border)';
-                let icon = 'ℹ️';
-                
-                if (log.l === 'ERROR') {
-                    color = 'rgba(255, 71, 133, 0.1)';
-                    borderColor = 'rgba(255, 71, 133, 0.4)';
-                    textColor = 'var(--alarm-red)';
-                    icon = '❌';
-                } else if (log.l === 'WARNING') {
-                    color = 'rgba(241, 196, 15, 0.1)';
-                    borderColor = 'rgba(241, 196, 15, 0.4)';
-                    textColor = 'var(--warn-yellow)';
-                    icon = '⚠️';
-                } else if (log.l === 'SECURITY') {
-                    color = 'rgba(0, 184, 148, 0.1)';
-                    borderColor = 'rgba(0, 184, 148, 0.4)';
-                    textColor = 'var(--safe-green)';
-                    icon = '🛡️';
-                }
-                
-                let timeStr = new Date(log.t * 1000).toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'});
-                
-                logsContainer.innerHTML += `
-                    <div style="background:${color}; border: 1px solid ${borderColor}; padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 13px;">
-                        <span style="font-size: 16px;">${icon}</span>
-                        <span style="opacity:0.5; font-size: 11px; min-width: 45px;">${timeStr}</span>
-                        <strong style="color:${textColor}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px;">${log.s}</strong>
-                        <span style="color:${textColor}; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;">${log.m}</span>
-                    </div>
-                `;
-            });
-        } else {
-            logsContainer.innerHTML = `
-                <div style="background:rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; text-align: center; font-size: 13px; color: var(--content-color); opacity: 0.5;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:block; margin: 0 auto 8px auto; opacity: 0.5;">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    Keine aktuellen Ereignisse
-                </div>
-            `;
-        }
-        sensorList.appendChild(logsContainer);
-        
-    } else if (currentView === 'zustand') {
-        let html = '<div style="display:flex; flex-direction:column; gap:8px; width:100%; max-width:420px; margin:0 auto;">';
-        if (data.openWindows && data.openWindows.length > 0) {
-            data.openWindows.forEach(win => {
-                html += `<div style="background:rgba(241,196,15,0.1); border: 1px solid rgba(241,196,15,0.4); padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--warn-yellow);">
-                    <span>🪟</span> <strong>${win}</strong> <span style="opacity:0.7">ist geöffnet</span>
-                </div>`;
-            });
-        }
-        if (data.activeMotions && data.activeMotions.length > 0) {
-            data.activeMotions.forEach(mot => {
-                html += `<div style="background:rgba(241,196,15,0.1); border: 1px solid rgba(241,196,15,0.4); padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--warn-yellow);">
-                    <span>🏃</span> <strong>${mot}</strong> <span style="opacity:0.7">meldet Bewegung</span>
-                </div>`;
-            });
-        }
-        if ((!data.openWindows || data.openWindows.length === 0) && (!data.activeMotions || data.activeMotions.length === 0)) {
-            html += `<div style="text-align:center; padding: 20px; opacity:0.5; color:var(--safe-green)">Alles geschlossen und sicher.</div>`;
-        }
-        html += '</div>';
-        sensorList.innerHTML = html;
-        
-    } else if (currentView === 'geraete') {
-        let html = '<div style="display:flex; flex-direction:column; gap:8px; width:100%; max-width:420px; margin:0 auto;">';
-        if (data.offlineDevices && data.offlineDevices.length > 0) {
-            data.offlineDevices.forEach(dev => {
-                html += `<div style="background:rgba(255,71,133,0.1); border: 1px solid rgba(255,71,133,0.4); padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--alarm-red);">
-                    <span>🔌</span> <strong>${dev}</strong> <span style="opacity:0.7">ist offline</span>
-                </div>`;
-            });
-        }
-        if (data.lowBatteries && data.lowBatteries.length > 0) {
-            data.lowBatteries.forEach(dev => {
-                html += `<div style="background:rgba(241,196,15,0.1); border: 1px solid rgba(241,196,15,0.4); padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--warn-yellow);">
-                    <span>🔋</span> <strong>${dev}</strong> <span style="opacity:0.7">Batterie niedrig</span>
-                </div>`;
-            });
-        }
-        if ((!data.offlineDevices || data.offlineDevices.length === 0) && (!data.lowBatteries || data.lowBatteries.length === 0)) {
-            html += `<div style="text-align:center; padding: 20px; opacity:0.5; color:var(--safe-green)">Alle Geräte online und funktionsfähig.</div>`;
-        }
-        html += '</div>';
-        sensorList.innerHTML = html;
-        
-    } else if (currentView === 'ereignisse') {
-        let html = '<div style="display:flex; flex-direction:column; gap:8px; width:100%; max-width:420px; margin:0 auto;">';
-        if (data.activeEventsList && data.activeEventsList.length > 0) {
-            data.activeEventsList.forEach(ev => {
-                html += `<div style="background:rgba(255,71,133,0.1); border: 1px solid rgba(255,71,133,0.4); padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--alarm-red);">
-                    <span>🔔</span> <strong>${ev}</strong>
-                </div>`;
-            });
-        } else {
-            html += `<div style="text-align:center; padding: 20px; opacity:0.5; color:var(--safe-green)">Keine aktiven Ereignisse.</div>`;
-        }
-        html += '</div>';
-        sensorList.innerHTML = html;
-        
-    } else if (currentView === 'lichter') {
-        let html = '<div style="display:flex; flex-direction:column; gap:12px; width:100%; max-width:420px; margin:0 auto;">';
-        
-        if (activeLights.length > 0) {
-            html += `<div onclick="requestAction('TurnOffAllLights', true)" style="cursor:pointer; background:rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); padding: 12px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 14px; font-weight: bold; color: var(--content-color); transition: all 0.2s ease;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
-                Alle aktiven Lichter ausschalten
-            </div>`;
-            
-            html += '<div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">';
-            activeLights.forEach(light => {
-                html += `<div class="sensor-pill warn" style="cursor:pointer;" onclick="requestAction('ToggleLight', ${light.id})" title="Klicken zum Ausschalten">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>
-                    ${light.name}
-                </div>`;
-            });
-            html += '</div>';
-        } else {
-            html += `<div style="text-align:center; padding: 20px; opacity:0.5; color:var(--safe-green)">Alle Lichter sind aus.</div>`;
-        }
-        
-        html += '</div>';
-        sensorList.innerHTML = html;
-    }
 }
 
 function setMode(mode) {
     requestAction('SetPresenceMode', mode);
 }
 
-// Initialer Request
+function handleMessage(data) {
+    if (!data) return;
+    try { render(JSON.parse(data)); } catch(e) { console.error('Parse error', e); }
+}
+
+function svgCheck() {
+    return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="10"></circle></svg>';
+}
+
+function render(data) {
+    lastData = data;
+
+    const openCount   = (data.openWindows   || []).length;
+    const motionCount = (data.activeMotions  || []).length;
+    const alarmCount  = data.activeEventsCount || 0;
+    const issues      = data.deviceIssuesCount || 0;
+    const staleCount  = data.staleCount || 0;
+    const presence    = data.presenceMode ?? 0;
+
+    // ── Bubbles ──
+    const bZ = document.getElementById('bubbleZustand');
+    const bM = document.getElementById('bubbleMotion');
+    const bG = document.getElementById('bubbleGeraete');
+    const bA = document.getElementById('bubbleAlarme');
+
+    // Zustand
+    bZ.className = 'shield-container';
+    if (alarmCount > 0)       { bZ.className += ' alarm'; setBubbleIcon(bZ, 'alert'); }
+    else if (openCount > 0)   { bZ.className += ' warn';  setBubbleIcon(bZ, 'window'); }
+    else                      { bZ.className += ' safe';  setBubbleIcon(bZ, 'shield-ok'); }
+
+    // Bewegung
+    bM.className = 'shield-container';
+    if (motionCount > 0) {
+        bM.className += ' motion';
+        bM.innerHTML = `<div class="bubble-count" style="color:var(--motion-blue)">${motionCount}</div>`;
+    } else {
+        bM.className += ' safe'; setBubbleIcon(bM, 'motion');
+    }
+
+    // Geraete
+    bG.className = 'shield-container';
+    if (issues > 0) {
+        bG.className += ' warn';
+        bG.innerHTML = `<div class="bubble-count" style="color:var(--warn-yellow)">${issues}</div>`;
+    } else {
+        bG.className += ' safe'; setBubbleIcon(bG, 'device');
+    }
+
+    // Alarme
+    bA.className = 'shield-container';
+    if (alarmCount > 0) {
+        bA.className += ' alarm';
+        bA.innerHTML = `<div class="bubble-count" style="color:var(--alarm-red)">${alarmCount}</div>`;
+    } else {
+        bA.className += ' safe'; setBubbleIcon(bA, 'bell');
+    }
+
+    // Active view highlight
+    const viewMap = { zustand: bZ, motion: bM, geraete: bG, alarme: bA };
+    Object.values(viewMap).forEach(b => b.classList.remove('active-view'));
+    if (viewMap[currentView]) viewMap[currentView].classList.add('active-view');
+
+    // ── PresenceMode Switcher ──
+    [0,1,2].forEach(i => {
+        const btn = document.getElementById('modeBtn' + i);
+        btn.className = 'mode-btn' + (presence === i ? ' active' : '');
+    });
+
+    // ── Detail Area ──
+    const area = document.getElementById('detailArea');
+
+    if (currentView === 'overview') {
+        // Logs + offene Kontakte als Zusammenfassung
+        let html = '<div class="detail-list">';
+        const logs = data.latestLogs || [];
+        if (logs.length === 0) {
+            html += '<div class="empty-state">Keine aktuellen Ereignisse</div>';
+        } else {
+            logs.forEach(log => {
+                const cls = log.l === 'ERROR' ? 'alarm' : log.l === 'WARNING' ? 'warn' : log.l === 'SECURITY' ? 'motion' : '';
+                const time = new Date(log.t * 1000).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+                html += `<div class="detail-row log ${cls}">
+                    <span style="opacity:0.5;min-width:38px;font-size:11px">${time}</span>
+                    <strong style="white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis">${log.s}</strong>
+                    <span style="opacity:0.85;overflow:hidden;text-overflow:ellipsis;flex:1">${log.m}</span>
+                </div>`;
+            });
+        }
+        html += '</div>';
+        area.innerHTML = html;
+
+    } else if (currentView === 'zustand') {
+        let html = '<div class="detail-list">';
+        (data.openWindows || []).forEach(w => {
+            html += `<div class="detail-row warn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <strong>${w}</strong><span style="opacity:0.7">geoeffnet</span>
+            </div>`;
+        });
+        if (openCount === 0) html += '<div class="empty-state">Alle Kontakte geschlossen</div>';
+        html += '</div>';
+        area.innerHTML = html;
+
+    } else if (currentView === 'motion') {
+        let html = '<div class="detail-list">';
+        (data.activeMotions || []).forEach(m => {
+            html += `<div class="detail-row motion">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13" cy="4" r="1"></circle><path d="M7 21l3-6 2 3 2-4 3 7"></path><path d="M5 12l3-3 2 2 3-4"></path></svg>
+                <strong>${m}</strong><span style="opacity:0.7">Bewegung erkannt</span>
+            </div>`;
+        });
+        if (motionCount === 0) html += '<div class="empty-state">Keine aktive Bewegung</div>';
+        html += '</div>';
+        area.innerHTML = html;
+
+    } else if (currentView === 'geraete') {
+        let html = '<div class="detail-list">';
+        (data.offlineDevices || []).forEach(d => {
+            html += `<div class="detail-row alarm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"></path></svg>
+                <strong>${d}</strong><span style="opacity:0.7">offline</span>
+            </div>`;
+        });
+        (data.lowBatteries || []).forEach(d => {
+            html += `<div class="detail-row warn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2"></rect><path d="M22 11v2"></path></svg>
+                <strong>${d}</strong><span style="opacity:0.7">Batterie schwach</span>
+            </div>`;
+        });
+        if (staleCount > 0) {
+            html += `<div class="detail-row" style="border-color:rgba(255,255,255,0.1); color:rgba(255,255,255,0.4)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span>${staleCount} Sensoren ohne Update</span>
+            </div>`;
+        }
+        if (issues === 0 && staleCount === 0) html += '<div class="empty-state">Alle Geraete online</div>';
+        html += '</div>';
+        area.innerHTML = html;
+
+    } else if (currentView === 'alarme') {
+        let html = '<div class="detail-list">';
+        (data.activeEventsList || []).forEach(ev => {
+            html += `<div class="detail-row alarm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <strong>${ev}</strong>
+            </div>`;
+        });
+        if (alarmCount === 0) html += '<div class="empty-state">Keine aktiven Alarme</div>';
+        html += '</div>';
+        area.innerHTML = html;
+    }
+}
+
+function setBubbleIcon(el, type) {
+    const icons = {
+        'shield-ok': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>',
+        'alert':     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+        'window':    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+        'motion':    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="1"></circle><path d="M7 21l3-6 2 3 2-4 3 7"></path><path d="M5 12l3-3 2 2 3-4"></path></svg>',
+        'device':    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg>',
+        'bell':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>',
+    };
+    el.innerHTML = icons[type] || '';
+}
+
 requestAction('Init', 0);
 </script>
 
