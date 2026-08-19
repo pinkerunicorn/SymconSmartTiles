@@ -126,11 +126,12 @@ class SecurityKachel extends IPSModuleStrict
         // 2. SmartNotifier Counter
         $notifierId = $this->ReadPropertyInteger('SmartNotifierID');
         if ($notifierId > 0 && @IPS_InstanceExists($notifierId)) {
-            $map = [
+            $healthMap = [
                 'OfflineCount'     => 'deviceIssuesCount',
-                'LowBatteryCount'  => null, // Eigenes Feld
+                'LowBatteryCount'  => null,
                 'ActiveAlarmCount' => 'activeEventsCount',
-                'OpenContactCount' => null, // Eigenes Feld
+                'OpenContactCount' => null,
+                'MotionCount'      => null,
                 'StaleCount'       => 'staleCount',
             ];
 
@@ -138,8 +139,9 @@ class SecurityKachel extends IPSModuleStrict
             $lowBatCount  = 0;
             $alarmCount   = 0;
             $contactCount = 0;
+            $motionCount  = 0;
 
-            foreach ($map as $ident => $_) {
+            foreach ($healthMap as $ident => $_) {
                 $vid = @IPS_GetObjectIDByIdent($ident, $notifierId);
                 if ($vid && @IPS_VariableExists($vid)) {
                     $val = (int)GetValue($vid);
@@ -148,6 +150,7 @@ class SecurityKachel extends IPSModuleStrict
                         case 'LowBatteryCount':  $lowBatCount  = $val; break;
                         case 'ActiveAlarmCount': $alarmCount   = $val; break;
                         case 'OpenContactCount': $contactCount = $val; break;
+                        case 'MotionCount':      $motionCount  = $val; break;
                         case 'StaleCount':       $payload['staleCount'] = $val; break;
                     }
                 }
@@ -199,6 +202,25 @@ class SecurityKachel extends IPSModuleStrict
                         foreach ($batList as $dev) {
                             $name = ($dev['instanceName'] ?? '') . ($dev['room'] ? ' (' . $dev['room'] . ')' : '');
                             $payload['lowBatteries'][] = trim($name);
+                        }
+                    }
+                }
+
+                // Aktive Bewegungsmelder
+                if ($motionCount > 0) {
+                    $motionJson = @SINV_GetByCategory($inventoryId, 'motion');
+                    $motions    = is_string($motionJson) ? json_decode($motionJson, true) : [];
+                    if (is_array($motions)) {
+                        foreach ($motions as $m) {
+                            $varID = $m['varID'] ?? 0;
+                            if (!$varID || !@IPS_VariableExists($varID)) continue;
+                            $val         = GetValue($varID);
+                            $normalState = $m['normalState'] ?? null;
+                            $isActive    = ($normalState !== null) ? ($val != $normalState) : (bool)$val;
+                            if ($isActive) {
+                                $name = ($m['instanceName'] ?? '') . ($m['room'] ? ' (' . $m['room'] . ')' : '');
+                                $payload['activeMotions'][] = trim($name);
+                            }
                         }
                     }
                 }
