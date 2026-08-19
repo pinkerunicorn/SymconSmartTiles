@@ -329,7 +329,7 @@ class SecurityKachel extends IPSModuleStrict
                 ],
             ],
             'actions' => [
-                ['type' => 'Button', 'caption' => 'Daten jetzt aktualisieren', 'onClick' => 'SK_UpdateData($id); echo "Aktualisiert.";'],
+                ['type' => 'Button', 'caption' => 'Daten jetzt aktualisieren', 'onClick' => 'SECKACHEL_UpdateData($id); echo "Aktualisiert.";'],
             ],
         ]);
     }
