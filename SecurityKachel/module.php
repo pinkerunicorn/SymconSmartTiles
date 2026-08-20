@@ -29,7 +29,7 @@ class SecurityKachel extends IPSModuleStrict
         // Legacy (Migration – wird nicht mehr aktiv genutzt)
         $this->RegisterPropertyInteger('TileType', 1);
         $this->RegisterPropertyInteger('RegistryID', 0);
-        $this->RegisterPropertyInteger('DeviceRegistryID', 0);
+        
 
         $this->DA_RegisterAvailability(900);
     }
