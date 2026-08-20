@@ -151,17 +151,7 @@ html, body {
                     </div>
                     <div class="bubble-label">Zustand</div>
                 </div>
-                <!-- Bewegung -->
-                <div class="bubble-box" onclick="setView('motion')">
-                    <div id="bubbleMotion" class="shield-container safe">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="13" cy="4" r="1"></circle>
-                            <path d="M7 21l3-6 2 3 2-4 3 7"></path>
-                            <path d="M5 12l3-3 2 2 3-4"></path>
-                        </svg>
-                    </div>
-                    <div class="bubble-label">Bewegung</div>
-                </div>
+
                 <!-- Geraete -->
                 <div class="bubble-box" onclick="setView('geraete')">
                     <div id="bubbleGeraete" class="shield-container safe">
@@ -242,7 +232,7 @@ function render(data) {
 
     // ── Bubbles ──
     const bZ = document.getElementById('bubbleZustand');
-    const bM = document.getElementById('bubbleMotion');
+    
     const bG = document.getElementById('bubbleGeraete');
     const bA = document.getElementById('bubbleAlarme');
 
@@ -252,14 +242,7 @@ function render(data) {
     else if (openCount > 0)   { bZ.className += ' warn';  setBubbleIcon(bZ, 'window'); }
     else                      { bZ.className += ' safe';  setBubbleIcon(bZ, 'shield-ok'); }
 
-    // Bewegung
-    bM.className = 'shield-container';
-    if (motionCount > 0) {
-        bM.className += ' motion';
-        bM.innerHTML = `<div class="bubble-count" style="color:var(--motion-blue)">${motionCount}</div>`;
-    } else {
-        bM.className += ' safe'; setBubbleIcon(bM, 'motion');
-    }
+
 
     // Geraete
     bG.className = 'shield-container';
@@ -280,7 +263,7 @@ function render(data) {
     }
 
     // Active view highlight
-    const viewMap = { zustand: bZ, motion: bM, geraete: bG, alarme: bA };
+    const viewMap = { zustand: bZ, geraete: bG, alarme: bA };
     Object.values(viewMap).forEach(b => b.classList.remove('active-view'));
     if (viewMap[currentView]) viewMap[currentView].classList.add('active-view');
 
