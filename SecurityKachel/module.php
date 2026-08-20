@@ -173,6 +173,24 @@ class SecurityKachel extends IPSModuleStrict
                     }
                 }
 
+                // Aktive Alarme
+                if ($alarmCount > 0 && function_exists('SINV_GetActiveAlarms')) {
+                    $alarmsJson = @SINV_GetActiveAlarms($inventoryId);
+                    $alarms = is_string($alarmsJson) ? json_decode($alarmsJson, true) : [];
+                    if (is_array($alarms)) {
+                        foreach ($alarms as $a) {
+                            $name = ($a['instanceName'] ?? '') . (($a['room'] ?? '') ? ' (' . $a['room'] . ')' : '');
+                            $tag = $a['tag'] ?? '';
+                            if ($tag) {
+                                $parts = explode(':', $tag);
+                                $shortTag = end($parts);
+                                $name .= " [" . $shortTag . "]";
+                            }
+                            $payload['activeEventsList'][] = trim($name);
+                        }
+                    }
+                }
+
                 // Aktive Bewegungsmelder
                 if ($motionCount > 0) {
                     $motionJson = @SINV_GetByCategory($inventoryId, 'motion');
