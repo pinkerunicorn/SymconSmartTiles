@@ -142,7 +142,7 @@ html, body {
         <div style="display:flex; flex-direction:column; gap:16px; align-items:center;">
             <div class="bubbles-row">
                 <!-- Zustand (Schild) -->
-                <div class="bubble-box" onclick="setView('zustand')">
+                <div class="bubble-box" onclick="handleZustandClick()">
                     <div id="bubbleZustand" class="shield-container safe">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
@@ -203,6 +203,13 @@ html, body {
 
 <script>
 let currentView = 'overview';
+function handleZustandClick() {
+    if (window._alarmCount > 0) {
+        setView('alarme');
+    } else {
+        setView('zustand');
+    }
+}
 let lastData = null;
 
 function setView(view) {
@@ -228,6 +235,7 @@ function render(data) {
 
     const openCount   = (data.openWindows   || []).length;
     const motionCount = (data.activeMotions  || []).length;
+    window._alarmCount = data.activeEventsCount || 0;
     const alarmCount  = data.activeEventsCount || 0;
     const devProbs    = data.deviceProblemsCount || 0;
     const presence    = data.presenceMode ?? 0;
