@@ -82,7 +82,7 @@ class SecurityKachel extends IPSModuleStrict
         // 2. SmartNotifier Counter
         $notifierId = $this->ReadPropertyInteger('SmartNotifierID');
         if ($notifierId > 0 && @IPS_InstanceExists($notifierId)) {
-            foreach (['OfflineCount', 'LowBatteryCount', 'ActiveAlarmCount', 'OpenContactCount', 'StaleCount'] as $ident) {
+            foreach (['DeviceProblems', 'ActiveAlarmCount', 'OpenContactCount', 'MotionCount'] as $ident) {
                 $vid = @IPS_GetObjectIDByIdent($ident, $notifierId);
                 if ($vid) $this->RegisterMessage($vid, VM_UPDATE);
             }
@@ -99,18 +99,15 @@ class SecurityKachel extends IPSModuleStrict
     public function UpdateData(): void
     {
         $payload = [
-            'presenceMode'     => 0,
-            'alarmLevel'       => 0,
-            'openWindows'      => [],
-            'activeMotions'    => [],
-            'activeLights'     => [],
-            'lowBatteries'     => [],
-            'offlineDevices'   => [],
-            'deviceIssuesCount'=> 0,
-            'activeEventsCount'=> 0,
-            'activeEventsList' => [],
-            'staleCount'       => 0,
-            'latestLogs'       => [],
+            'presenceMode'       => 0,
+            'alarmLevel'         => 0,
+            'openWindows'        => [],
+            'activeMotions'      => [],
+            'deviceProblems'     => [],
+            'deviceProblemsCount'=> 0,
+            'activeEventsCount'  => 0,
+            'activeEventsList'   => [],
+            'latestLogs'         => [],
         ];
 
         // 1. SmartController
@@ -126,38 +123,18 @@ class SecurityKachel extends IPSModuleStrict
         // 2. SmartNotifier Counter
         $notifierId = $this->ReadPropertyInteger('SmartNotifierID');
         if ($notifierId > 0 && @IPS_InstanceExists($notifierId)) {
-            $healthMap = [
-                'OfflineCount'     => 'deviceIssuesCount',
-                'LowBatteryCount'  => null,
-                'ActiveAlarmCount' => 'activeEventsCount',
-                'OpenContactCount' => null,
-                'MotionCount'      => null,
-                'StaleCount'       => 'staleCount',
-            ];
+            $devProbVid = @IPS_GetObjectIDByIdent('DeviceProblems',   $notifierId);
+            $alarmVid   = @IPS_GetObjectIDByIdent('ActiveAlarmCount', $notifierId);
+            $contactVid = @IPS_GetObjectIDByIdent('OpenContactCount', $notifierId);
+            $motionVid  = @IPS_GetObjectIDByIdent('MotionCount',      $notifierId);
 
-            $offlineCount = 0;
-            $lowBatCount  = 0;
-            $alarmCount   = 0;
-            $contactCount = 0;
-            $motionCount  = 0;
+            $devProbs    = ($devProbVid && @IPS_VariableExists($devProbVid)) ? (int)GetValue($devProbVid) : 0;
+            $alarmCount  = ($alarmVid   && @IPS_VariableExists($alarmVid))   ? (int)GetValue($alarmVid)   : 0;
+            $contactCount= ($contactVid && @IPS_VariableExists($contactVid)) ? (int)GetValue($contactVid) : 0;
+            $motionCount = ($motionVid  && @IPS_VariableExists($motionVid))  ? (int)GetValue($motionVid)  : 0;
 
-            foreach ($healthMap as $ident => $_) {
-                $vid = @IPS_GetObjectIDByIdent($ident, $notifierId);
-                if ($vid && @IPS_VariableExists($vid)) {
-                    $val = (int)GetValue($vid);
-                    switch ($ident) {
-                        case 'OfflineCount':     $offlineCount = $val; break;
-                        case 'LowBatteryCount':  $lowBatCount  = $val; break;
-                        case 'ActiveAlarmCount': $alarmCount   = $val; break;
-                        case 'OpenContactCount': $contactCount = $val; break;
-                        case 'MotionCount':      $motionCount  = $val; break;
-                        case 'StaleCount':       $payload['staleCount'] = $val; break;
-                    }
-                }
-            }
-
-            $payload['deviceIssuesCount'] = $offlineCount + $lowBatCount;
-            $payload['activeEventsCount'] = $alarmCount;
+            $payload['deviceProblemsCount'] = $devProbs;
+            $payload['activeEventsCount']   = $alarmCount;
 
             // Konkrete Listen aus SmartInventory holen wenn konfiguriert
             $inventoryId = $this->ReadPropertyInteger('SmartInventoryID');
@@ -170,7 +147,6 @@ class SecurityKachel extends IPSModuleStrict
                         foreach ($contacts as $c) {
                             $varID = $c['varID'] ?? 0;
                             if (!$varID || !@IPS_VariableExists($varID)) continue;
-                            // Prüfen ob offen (triggered)
                             $val         = GetValue($varID);
                             $normalState = $c['normalState'] ?? null;
                             $isOpen      = ($normalState !== null) ? ($val != $normalState) : (bool)$val;
@@ -182,26 +158,17 @@ class SecurityKachel extends IPSModuleStrict
                     }
                 }
 
-                // Offline-Geräte
-                if ($offlineCount > 0) {
-                    $offlineJson = @SINV_GetOffline($inventoryId);
-                    $offlineList = is_string($offlineJson) ? json_decode($offlineJson, true) : [];
-                    if (is_array($offlineList)) {
-                        foreach ($offlineList as $dev) {
-                            $name = ($dev['instanceName'] ?? '') . ($dev['room'] ? ' (' . $dev['room'] . ')' : '');
-                            $payload['offlineDevices'][] = trim($name);
-                        }
-                    }
-                }
-
-                // Batterien schwach
-                if ($lowBatCount > 0) {
-                    $batJson  = @SINV_GetLowBattery($inventoryId, 15);
-                    $batList  = is_string($batJson) ? json_decode($batJson, true) : [];
-                    if (is_array($batList)) {
-                        foreach ($batList as $dev) {
-                            $name = ($dev['instanceName'] ?? '') . ($dev['room'] ? ' (' . $dev['room'] . ')' : '');
-                            $payload['lowBatteries'][] = trim($name);
+                // Geraete-Probleme (dedupliziert mit Root-Cause)
+                if ($devProbs > 0 && function_exists('SINV_GetProblems')) {
+                    $problemsJson = @SINV_GetProblems($inventoryId);
+                    $problems     = is_string($problemsJson) ? json_decode($problemsJson, true) : [];
+                    if (is_array($problems)) {
+                        foreach ($problems as $p) {
+                            $payload['deviceProblems'][] = [
+                                'name'   => ($p['instanceName'] ?? '') . (($p['room'] ?? '') ? ' (' . $p['room'] . ')' : ''),
+                                'health' => $p['health'] ?? 'unknown',
+                                'detail' => $p['detail'] ?? '',
+                            ];
                         }
                     }
                 }

@@ -229,8 +229,7 @@ function render(data) {
     const openCount   = (data.openWindows   || []).length;
     const motionCount = (data.activeMotions  || []).length;
     const alarmCount  = data.activeEventsCount || 0;
-    const issues      = data.deviceIssuesCount || 0;
-    const staleCount  = data.staleCount || 0;
+    const devProbs    = data.deviceProblemsCount || 0;
     const presence    = data.presenceMode ?? 0;
 
     // ── Bubbles ──
@@ -256,9 +255,9 @@ function render(data) {
 
     // Geraete
     bG.className = 'shield-container';
-    if (issues > 0) {
+    if (devProbs > 0) {
         bG.className += ' warn';
-        bG.innerHTML = `<div class="bubble-count" style="color:var(--warn-yellow)">${issues}</div>`;
+        bG.innerHTML = `<div class="bubble-count" style="color:var(--warn-yellow)">${devProbs}</div>`;
     } else {
         bG.className += ' safe'; setBubbleIcon(bG, 'device');
     }
@@ -331,26 +330,19 @@ function render(data) {
         area.innerHTML = html;
 
     } else if (currentView === 'geraete') {
+        const healthCls = { alarm: 'alarm', battery_dead: 'alarm', offline: 'warn', battery_low: 'warn', stale: '' };
+        const healthLabel = { alarm: 'Alarm', battery_dead: 'Batterie leer', offline: 'Offline', battery_low: 'Batterie schwach', stale: 'Veraltet' };
         let html = '<div class="detail-list">';
-        (data.offlineDevices || []).forEach(d => {
-            html += `<div class="detail-row alarm">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"></path></svg>
-                <strong>${d}</strong><span style="opacity:0.7">offline</span>
+        (data.deviceProblems || []).forEach(p => {
+            const cls = healthCls[p.health] || '';
+            const label = healthLabel[p.health] || p.health;
+            html += `<div class="detail-row ${cls}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg>
+                <strong>${p.name}</strong>
+                <span style="opacity:0.7">${label}: ${p.detail}</span>
             </div>`;
         });
-        (data.lowBatteries || []).forEach(d => {
-            html += `<div class="detail-row warn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2"></rect><path d="M22 11v2"></path></svg>
-                <strong>${d}</strong><span style="opacity:0.7">Batterie schwach</span>
-            </div>`;
-        });
-        if (staleCount > 0) {
-            html += `<div class="detail-row" style="border-color:rgba(255,255,255,0.1); color:rgba(255,255,255,0.4)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <span>${staleCount} Sensoren ohne Update</span>
-            </div>`;
-        }
-        if (issues === 0 && staleCount === 0) html += '<div class="empty-state">Alle Geraete online</div>';
+        if (devProbs === 0) html += '<div class="empty-state">Alle Geraete gesund</div>';
         html += '</div>';
         area.innerHTML = html;
 
