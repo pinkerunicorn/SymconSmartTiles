@@ -126,12 +126,12 @@ class SecurityKachel extends IPSModuleStrict
             $devProbVid = @IPS_GetObjectIDByIdent('DeviceProblems',   $notifierId);
             $alarmVid   = @IPS_GetObjectIDByIdent('ActiveAlarmCount', $notifierId);
             $contactVid = @IPS_GetObjectIDByIdent('OpenContactCount', $notifierId);
-            $motionVid  = @IPS_GetObjectIDByIdent('MotionCount',      $notifierId);
+
 
             $devProbs    = ($devProbVid && @IPS_VariableExists($devProbVid)) ? (int)GetValue($devProbVid) : 0;
             $alarmCount  = ($alarmVid   && @IPS_VariableExists($alarmVid))   ? (int)GetValue($alarmVid)   : 0;
             $contactCount= ($contactVid && @IPS_VariableExists($contactVid)) ? (int)GetValue($contactVid) : 0;
-            $motionCount = ($motionVid  && @IPS_VariableExists($motionVid))  ? (int)GetValue($motionVid)  : 0;
+
 
             $payload['deviceProblemsCount'] = $devProbs;
             $payload['activeEventsCount']   = $alarmCount;
@@ -197,8 +197,8 @@ class SecurityKachel extends IPSModuleStrict
                     }
                 }
 
-                // Aktive Bewegungsmelder
-                if ($motionCount > 0) {
+                // Wenn wir Alarme haben, prüfen wir auch Bewegungsmelder, da diese bei Abwesenheit Alarme auslösen!
+                if ($alarmCount > 0 && ($payload['presenceMode'] ?? 0) > 0) {
                     $motionJson = @SINV_GetByCategory($inventoryId, 'motion');
                     $motions    = is_string($motionJson) ? json_decode($motionJson, true) : [];
                     if (is_array($motions)) {
@@ -209,8 +209,8 @@ class SecurityKachel extends IPSModuleStrict
                             $normalState = $m['normalState'] ?? null;
                             $isActive    = ($normalState !== null) ? ($val != $normalState) : (bool)$val;
                             if ($isActive) {
-                                $name = ($m['instanceName'] ?? '') . ($m['room'] ? ' (' . $m['room'] . ')' : '');
-                                $payload['activeMotions'][] = trim($name);
+                                $name = ($m['instanceName'] ?? '') . ($m['room'] ? ' (' . $m['room'] . ')' : '') . ' [Bewegung]';
+                                $payload['activeEventsList'][] = trim($name);
                             }
                         }
                     }

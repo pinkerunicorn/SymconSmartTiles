@@ -78,8 +78,7 @@ html, body {
 .shield-container.warn   { box-shadow: inset 0 0 20px rgba(241,196,15,0.2), 0 0 25px rgba(241,196,15,0.2), 0 0 0 1px rgba(241,196,15,0.4); }
 .shield-container.warn svg { color: var(--warn-yellow); opacity: 1; filter: drop-shadow(0 0 4px var(--warn-yellow)); }
 
-.shield-container.motion { box-shadow: inset 0 0 20px rgba(116,185,255,0.2), 0 0 25px rgba(116,185,255,0.15), 0 0 0 1px rgba(116,185,255,0.4); }
-.shield-container.motion svg { color: var(--motion-blue); opacity: 1; }
+
 
 .shield-container.alarm  { box-shadow: inset 0 0 20px rgba(255,71,133,0.3), 0 0 30px rgba(255,71,133,0.4), 0 0 0 1px rgba(255,71,133,0.5); animation: pulse-alarm 1s infinite alternate; }
 .shield-container.alarm svg { color: var(--alarm-red); opacity: 1; filter: drop-shadow(0 0 6px var(--alarm-red)); }
@@ -106,7 +105,7 @@ html, body {
 }
 .detail-row.alarm  { background: rgba(255,71,133,0.1);  border-color: rgba(255,71,133,0.4);  color: var(--alarm-red); }
 .detail-row.warn   { background: rgba(241,196,15,0.1);  border-color: rgba(241,196,15,0.4);  color: var(--warn-yellow); }
-.detail-row.motion { background: rgba(116,185,255,0.1); border-color: rgba(116,185,255,0.4); color: var(--motion-blue); }
+
 .detail-row.safe   { background: rgba(0,184,148,0.08);  border-color: rgba(0,184,148,0.2);   color: var(--safe-green); }
 .detail-row.log    { font-size: 13px; }
 
@@ -224,7 +223,7 @@ function render(data) {
     lastData = data;
 
     const openCount   = (data.openWindows   || []).length;
-    const motionCount = (data.activeMotions  || []).length;
+    
     window._alarmCount = data.activeEventsCount || 0;
     const alarmCount  = data.activeEventsCount || 0;
     const devProbs    = data.deviceProblemsCount || 0;
@@ -308,17 +307,6 @@ function render(data) {
         html += '</div>';
         area.innerHTML = html;
 
-    } else if (currentView === 'motion') {
-        let html = '<div class="detail-list">';
-        (data.activeMotions || []).forEach(m => {
-            html += `<div class="detail-row motion">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13" cy="4" r="1"></circle><path d="M7 21l3-6 2 3 2-4 3 7"></path><path d="M5 12l3-3 2 2 3-4"></path></svg>
-                <strong>${m}</strong><span style="opacity:0.7">Bewegung erkannt</span>
-            </div>`;
-        });
-        if (motionCount === 0) html += '<div class="empty-state">Keine aktive Bewegung</div>';
-        html += '</div>';
-        area.innerHTML = html;
 
     } else if (currentView === 'geraete') {
         const healthCls = { alarm: 'alarm', battery_dead: 'alarm', offline: 'warn', battery_low: 'warn', stale: '' };
