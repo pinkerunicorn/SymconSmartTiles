@@ -247,28 +247,17 @@ class SecurityKachel extends IPSModuleStrict
         }
 
         if ($Ident === 'TurnOffAllLights') {
-            // Lichter sind nicht in SmartInventory – DeviceRegistry als Fallback
-            $drId = (int)$this->ReadPropertyInteger('DeviceRegistryID');
-            if ($drId > 0 && @IPS_InstanceExists($drId) && function_exists('SDR_GetDevicesByType')) {
-                $allLights = array_merge(
-                    (array)@SDR_GetDevicesByType($drId, 'DevicesLight'),
-                    (array)@SDR_GetDevicesByType($drId, 'DevicesLightDimmer'),
-                    (array)@SDR_GetDevicesByType($drId, 'DevicesLightColor')
-                );
-                foreach ($allLights as $light) {
-                    if (!($light['enabled'] ?? true)) continue;
-                    $isDimmer = ($light['Type'] === 'DevicesLightDimmer');
-                    $vid = $isDimmer
-                        ? (int)($light['Brightness_VarID'] ?? 0)
-                        : (int)($light['OnOff_VarID'] ?? $light['Status_VarID'] ?? 0);
-                    if ($vid > 0 && IPS_VariableExists($vid)) {
-                        $val = GetValue($vid);
-                        if ($val > 0 || $val === true) {
-                            $varInfo = IPS_GetVariable($vid);
-                            if ($varInfo['VariableType'] == 1) {
-                                RequestAction($vid, 0);
-                            } elseif ($varInfo['VariableType'] == 0) {
-                                RequestAction($vid, false);
+            $invId = (int)$this->ReadPropertyInteger('SmartInventoryID');
+            if ($invId > 0 && @IPS_InstanceExists($invId)) {
+                $types = ['actor:switch', 'actor:dimmer', 'actor:color'];
+                foreach ($types as $t) {
+                    $devices = json_decode(@SINV_GetByCategory($invId, $t), true) ?: [];
+                    foreach ($devices as $dev) {
+                        $vid = (int)($dev['varID'] ?? 0);
+                        if ($vid > 0 && @IPS_VariableExists($vid)) {
+                            $val = GetValue($vid);
+                            if ($val > 0 || $val === true) {
+                                RequestAction($vid, ($t === 'actor:dimmer') ? 0 : false);
                             }
                         }
                     }
@@ -287,11 +276,9 @@ class SecurityKachel extends IPSModuleStrict
                     'caption' => 'Datenquellen',
                     'expanded'=> true,
                     'items'   => [
-                        ['type' => 'SelectInstance', 'name' => 'SmartControllerID', 'caption' => 'SmartController Instanz'],
-                        ['type' => 'SelectInstance', 'name' => 'SmartNotifierID',   'caption' => 'SmartNotifier Instanz (Monitoring-Daten)'],
-                        ['type' => 'SelectInstance', 'name' => 'SmartInventoryID',  'caption' => 'SmartInventory Instanz (Geraete-Listen)'],
-                        ['type' => 'Label', 'caption' => 'Optional: DeviceRegistry fuer "Alle Lichter aus"'],
-                        ['type' => 'SelectInstance', 'name' => 'DeviceRegistryID',  'caption' => 'DeviceRegistry (Lichter)'],
+                        ['type' => 'SelectInstance', 'name' => 'SmartControllerID', 'caption' => 'SmartController'],
+                        ['type' => 'SelectInstance', 'name' => 'SmartNotifierID',   'caption' => 'SmartNotifier'],
+                        ['type' => 'SelectInstance', 'name' => 'SmartInventoryID',  'caption' => 'SmartInventory (Geraete-Status)'],
                     ],
                 ],
             ],
