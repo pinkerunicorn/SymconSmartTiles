@@ -138,6 +138,12 @@ class SecurityKachel extends IPSModuleStrict
 
             // Konkrete Listen aus SmartInventory holen wenn konfiguriert
             $inventoryId = $this->ReadPropertyInteger('SmartInventoryID');
+            if ($inventoryId == 0) {
+                $invIds = @IPS_GetInstanceListByModuleID('{8F4A2B1C-D3E5-4F6A-B7C8-9D0E1F2A3B4C}');
+                if (is_array($invIds) && count($invIds) > 0) {
+                    $inventoryId = $invIds[0];
+                }
+            }
             if ($inventoryId > 0 && @IPS_InstanceExists($inventoryId) && function_exists('SINV_GetByCategory')) {
                 // Kontakte offen
                 if ($contactCount > 0) {
