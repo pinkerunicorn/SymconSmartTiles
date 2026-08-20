@@ -24,7 +24,7 @@ class SecurityKachel extends IPSModuleStrict
         // Konfiguration
         $this->RegisterPropertyInteger('SmartControllerID', 0);
         $this->RegisterPropertyInteger('SmartNotifierID', 0);
-        $this->RegisterPropertyInteger('SmartInventoryID', 0);
+        $this->RegisterPropertyInteger('RegistryID', 0);
 
         // Legacy (Migration – wird nicht mehr aktiv genutzt)
         $this->RegisterPropertyInteger('TileType', 1);
@@ -137,7 +137,7 @@ class SecurityKachel extends IPSModuleStrict
             $payload['activeEventsCount']   = $alarmCount;
 
             // Konkrete Listen aus SmartInventory holen wenn konfiguriert
-            $inventoryId = $this->ReadPropertyInteger('SmartInventoryID');
+            $inventoryId = $this->ReadPropertyInteger('RegistryID');
             if ($inventoryId == 0) {
                 $invIds = @IPS_GetInstanceListByModuleID('{8F4A2B1C-D3E5-4F6A-B7C8-9D0E1F2A3B4C}');
                 if (is_array($invIds) && count($invIds) > 0) {
@@ -271,7 +271,7 @@ class SecurityKachel extends IPSModuleStrict
         }
 
         if ($Ident === 'TurnOffAllLights') {
-            $invId = (int)$this->ReadPropertyInteger('SmartInventoryID');
+            $invId = (int)$this->ReadPropertyInteger('RegistryID');
             if ($invId > 0 && @IPS_InstanceExists($invId)) {
                 $types = ['actor:switch', 'actor:dimmer', 'actor:color'];
                 foreach ($types as $t) {
@@ -302,7 +302,7 @@ class SecurityKachel extends IPSModuleStrict
                     'items'   => [
                         ['type' => 'SelectInstance', 'name' => 'SmartControllerID', 'caption' => 'SmartController'],
                         ['type' => 'SelectInstance', 'name' => 'SmartNotifierID',   'caption' => 'SmartNotifier'],
-                        ['type' => 'SelectInstance', 'name' => 'SmartInventoryID',  'caption' => 'SmartInventory (Geraete-Status)'],
+                        ['type' => 'SelectInstance', 'name' => 'RegistryID',  'caption' => 'SmartInventory (Geraete-Status)'],
                     ],
                 ],
             ],
