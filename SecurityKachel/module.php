@@ -183,10 +183,9 @@ class SecurityKachel extends IPSModuleStrict
 
                 // Geraete-Probleme (dedupliziert mit Root-Cause)
                 $problemsJson = '[]';
-                $notifierIds = @IPS_GetInstanceListByModuleID('{2512A0CA-5F11-40F0-9F3F-BD7AD1ACBB80}');
-                if ($devProbs > 0 && count($notifierIds) > 0) {
+                if ($devProbs > 0 && $notifierId > 0 && @IPS_InstanceExists($notifierId)) {
                     if (function_exists('NOTIFY_GetProblems')) {
-                        $problemsJson = @NOTIFY_GetProblems($notifierIds[0]);
+                        $problemsJson = @NOTIFY_GetProblems($notifierId);
                     } else {
                         IPS_LogMessage('SecurityKachel', 'Fehler: Funktion NOTIFY_GetProblems nicht gefunden!');
                         $payload['deviceProblems'][] = ['name' => 'System', 'health' => 'alarm', 'detail' => 'Modul-Fehler: NOTIFY_GetProblems fehlt'];
@@ -206,10 +205,9 @@ class SecurityKachel extends IPSModuleStrict
 
                 // Aktive Alarme
                 $alarmsJson = '[]';
-                $notifierIds = @IPS_GetInstanceListByModuleID('{2512A0CA-5F11-40F0-9F3F-BD7AD1ACBB80}');
-                if ($alarmCount > 0 && count($notifierIds) > 0) {
+                if ($alarmCount > 0 && $notifierId > 0 && @IPS_InstanceExists($notifierId)) {
                     if (function_exists('NOTIFY_GetActiveAlarms')) {
-                        $alarmsJson = @NOTIFY_GetActiveAlarms($notifierIds[0]);
+                        $alarmsJson = @NOTIFY_GetActiveAlarms($notifierId);
                     } else {
                         IPS_LogMessage('SecurityKachel', 'Fehler: Funktion NOTIFY_GetActiveAlarms nicht gefunden!');
                         $payload['activeEventsList'][] = 'System-Fehler: NOTIFY_GetActiveAlarms fehlt';
