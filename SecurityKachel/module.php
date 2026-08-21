@@ -318,7 +318,7 @@ class SecurityKachel extends IPSModuleStrict
         if ($Ident === 'TurnOffAllLights') {
             $invId = (int)$this->ReadPropertyInteger('RegistryID');
             if ($invId > 0 && @IPS_InstanceExists($invId) && function_exists('SINV_GetByCategory')) {
-                $types = ['actor:switch', 'actor:dimmer', 'actor:color'];
+                $types = ['actor:light', 'actor:dimmer', 'actor:color'];
                 foreach ($types as $t) {
                     $devices = json_decode(@SINV_GetByCategory($invId, $t), true) ?: [];
                     foreach ($devices as $dev) {
