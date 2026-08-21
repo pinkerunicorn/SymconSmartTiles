@@ -31,6 +31,10 @@ class SecurityKachel extends IPSModuleStrict
         
 
         $this->DA_RegisterAvailability(900);
+
+        $this->RegisterVariableString('DeviceProblemsList', 'Geraete-Probleme', ['PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION, 'ICON' => 'Warning'], 10);
+        $this->RegisterVariableString('ActiveAlarmsList', 'Aktive Alarme', ['PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION, 'ICON' => 'Bell'], 11);
+        $this->RegisterVariableString('OpenContactsList', 'Offene Kontakte', ['PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION, 'ICON' => 'Window'], 12);
     }
 
     public function ApplyChanges(): void
@@ -263,6 +267,15 @@ class SecurityKachel extends IPSModuleStrict
                 }
             }
         }
+
+        $deviceProblemsStr = implode("\n", array_map(fn($p) => $p['name'] . ' (' . $p['detail'] . ')', $payload['deviceProblems'] ?? []));
+        $this->SetValue('DeviceProblemsList', $deviceProblemsStr ?: 'Keine Probleme');
+
+        $alarmsStr = implode("\n", $payload['activeEventsList'] ?? []);
+        $this->SetValue('ActiveAlarmsList', $alarmsStr ?: 'Keine aktiven Alarme');
+
+        $contactsStr = implode("\n", $payload['openWindows'] ?? []);
+        $this->SetValue('OpenContactsList', $contactsStr ?: 'Alle geschlossen');
 
         $this->UpdateVisualizationValue(json_encode($payload));
         $this->DA_SetAvailable(true);
