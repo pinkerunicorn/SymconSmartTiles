@@ -143,7 +143,11 @@ class SecurityKachel extends IPSModuleStrict
                     $inventoryId = $invIds[0];
                 }
             }
-            if ($inventoryId > 0 && @IPS_InstanceExists($inventoryId) && function_exists('SINV_GetByCategory')) {
+            if ($inventoryId > 0 && @IPS_InstanceExists($inventoryId)) {
+                if (!function_exists('SINV_GetByCategory')) {
+                    IPS_LogMessage('SecurityKachel', 'Fehler: Funktion SINV_GetByCategory nicht gefunden!');
+                    $payload['deviceProblems'][] = ['name' => 'System', 'health' => 'alarm', 'detail' => 'Modul-Fehler: SINV_GetByCategory fehlt'];
+                }
                 // Kontakte offen
                 if ($contactCount > 0) {
                     $contactJson = @SINV_GetByCategory($inventoryId, 'contact');
@@ -176,8 +180,13 @@ class SecurityKachel extends IPSModuleStrict
                 // Geraete-Probleme (dedupliziert mit Root-Cause)
                 $problemsJson = '[]';
                 $notifierIds = @IPS_GetInstanceListByModuleID('{2512A0CA-5F11-40F0-9F3F-BD7AD1ACBB80}');
-                if ($devProbs > 0 && count($notifierIds) > 0 && function_exists('NOTIFY_GetProblems')) {
-                    $problemsJson = @NOTIFY_GetProblems($notifierIds[0]);
+                if ($devProbs > 0 && count($notifierIds) > 0) {
+                    if (function_exists('NOTIFY_GetProblems')) {
+                        $problemsJson = @NOTIFY_GetProblems($notifierIds[0]);
+                    } else {
+                        IPS_LogMessage('SecurityKachel', 'Fehler: Funktion NOTIFY_GetProblems nicht gefunden!');
+                        $payload['deviceProblems'][] = ['name' => 'System', 'health' => 'alarm', 'detail' => 'Modul-Fehler: NOTIFY_GetProblems fehlt'];
+                    }
                 }
                 $problems     = is_string($problemsJson) ? json_decode($problemsJson, true) : [];
                     if (is_array($problems)) {
@@ -193,8 +202,13 @@ class SecurityKachel extends IPSModuleStrict
                 // Aktive Alarme
                 $alarmsJson = '[]';
                 $notifierIds = @IPS_GetInstanceListByModuleID('{2512A0CA-5F11-40F0-9F3F-BD7AD1ACBB80}');
-                if ($alarmCount > 0 && count($notifierIds) > 0 && function_exists('NOTIFY_GetActiveAlarms')) {
-                    $alarmsJson = @NOTIFY_GetActiveAlarms($notifierIds[0]);
+                if ($alarmCount > 0 && count($notifierIds) > 0) {
+                    if (function_exists('NOTIFY_GetActiveAlarms')) {
+                        $alarmsJson = @NOTIFY_GetActiveAlarms($notifierIds[0]);
+                    } else {
+                        IPS_LogMessage('SecurityKachel', 'Fehler: Funktion NOTIFY_GetActiveAlarms nicht gefunden!');
+                        $payload['activeEventsList'][] = 'System-Fehler: NOTIFY_GetActiveAlarms fehlt';
+                    }
                 }
                 $alarms = is_string($alarmsJson) ? json_decode($alarmsJson, true) : [];
                     if (is_array($alarms)) {
@@ -233,8 +247,14 @@ class SecurityKachel extends IPSModuleStrict
 
         // 3. SmartLog
         $logIds = IPS_GetInstanceListByModuleID('{E4375147-F095-4B6F-9E06-F3A65EB8B635}');
-        if (!empty($logIds) && function_exists('SLOG_GetLatestLogs')) {
-            $logsJson = @SLOG_GetLatestLogs($logIds[0], 3);
+        if (!empty($logIds)) {
+            if (function_exists('SLOG_GetLatestLogs')) {
+                $logsJson = @SLOG_GetLatestLogs($logIds[0], 3);
+            } else {
+                IPS_LogMessage('SecurityKachel', 'Fehler: Funktion SLOG_GetLatestLogs nicht gefunden!');
+                $payload['latestLogs'][] = ['t' => time(), 'l' => 'ERROR', 's' => 'System', 'm' => 'Modul-Fehler: SLOG_GetLatestLogs fehlt'];
+                $logsJson = false;
+            }
             if ($logsJson) {
                 $logs = json_decode($logsJson, true);
                 if (is_array($logs)) {
