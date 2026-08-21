@@ -1,0 +1,13 @@
+{
+    "id": "{3AD63936-DEA4-447C-AA57-28EAD1D7234E}",
+    "name": "Meldungskachel",
+    "type": 3,
+    "vendor": "Florian Graßinger",
+    "aliases": ["Meldungskachel"],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "MELDKACHEL",
+    "author": "Florian Graßinger",
+    "url": "https://github.com/pinkerunicorn/SymconSmartTiles/tree/main/Meldungskachel"
+}

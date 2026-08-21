@@ -188,6 +188,7 @@ class SecurityKachel extends IPSModuleStrict
                         $payload['deviceProblems'][] = ['name' => 'System', 'health' => 'alarm', 'detail' => 'Modul-Fehler: NOTIFY_GetProblems fehlt'];
                     }
                 }
+                IPS_LogMessage('SecurityKachelDEBUG', 'Raw Problems JSON: ' . print_r($problemsJson, true));
                 $problems     = is_string($problemsJson) ? json_decode($problemsJson, true) : [];
                     if (is_array($problems)) {
                         foreach ($problems as $p) {
