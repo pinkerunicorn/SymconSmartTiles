@@ -174,6 +174,7 @@ class SecurityKachel extends IPSModuleStrict
                 }
 
                 // Geraete-Probleme (dedupliziert mit Root-Cause)
+                $problemsJson = '[]';
                 $notifierIds = @IPS_GetInstanceListByModuleID('{2512A0CA-5F11-40F0-9F3F-BD7AD1ACBB80}');
                 if ($devProbs > 0 && count($notifierIds) > 0 && function_exists('SNOT_GetProblems')) {
                     $problemsJson = @SNOT_GetProblems($notifierIds[0]);
@@ -190,6 +191,7 @@ class SecurityKachel extends IPSModuleStrict
                     }
 
                 // Aktive Alarme
+                $alarmsJson = '[]';
                 $notifierIds = @IPS_GetInstanceListByModuleID('{2512A0CA-5F11-40F0-9F3F-BD7AD1ACBB80}');
                 if ($alarmCount > 0 && count($notifierIds) > 0 && function_exists('SNOT_GetActiveAlarms')) {
                     $alarmsJson = @SNOT_GetActiveAlarms($notifierIds[0]);
