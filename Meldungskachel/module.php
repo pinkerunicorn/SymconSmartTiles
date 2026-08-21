@@ -54,6 +54,26 @@ class Meldungskachel extends IPSModuleStrict
         }
     }
 
+    public function GetConfigurationForm(): string
+    {
+        return json_encode([
+            'elements' => [
+                [
+                    'type'    => 'ExpansionPanel',
+                    'caption' => 'Datenquellen',
+                    'expanded'=> true,
+                    'items'   => [
+                        ['type' => 'SelectInstance', 'name' => 'SmartNotifierID',   'caption' => 'SmartNotifier'],
+                        ['type' => 'SelectInstance', 'name' => 'RegistryID',  'caption' => 'SmartInventory (Geraete-Status)'],
+                    ],
+                ],
+            ],
+            'actions' => [
+                ['type' => 'Button', 'caption' => 'Daten jetzt aktualisieren', 'onClick' => 'MELDKACHEL_UpdateData($id); echo "Aktualisiert.";'],
+            ],
+        ]);
+    }
+
     public function UpdateData(): void
     {
         $payload = [
