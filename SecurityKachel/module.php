@@ -188,7 +188,6 @@ class SecurityKachel extends IPSModuleStrict
                             ];
                         }
                     }
-                }
 
                 // Aktive Alarme
                 $notifierIds = @IPS_GetInstanceListByModuleID('{2512A0CA-5F11-40F0-9F3F-BD7AD1ACBB80}');
@@ -208,7 +207,6 @@ class SecurityKachel extends IPSModuleStrict
                             $payload['activeEventsList'][] = trim($name);
                         }
                     }
-                }
 
                 // Wenn wir Alarme haben, prüfen wir auch Bewegungsmelder, da diese bei Abwesenheit Alarme auslösen!
                 if ($alarmCount > 0 && ($payload['presenceMode'] ?? 0) > 0) {
