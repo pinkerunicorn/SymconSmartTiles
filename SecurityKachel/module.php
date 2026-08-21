@@ -174,9 +174,11 @@ class SecurityKachel extends IPSModuleStrict
                 }
 
                 // Geraete-Probleme (dedupliziert mit Root-Cause)
-                if ($devProbs > 0 && function_exists('SINV_GetProblems')) {
-                    $problemsJson = @SINV_GetProblems($inventoryId);
-                    $problems     = is_string($problemsJson) ? json_decode($problemsJson, true) : [];
+                $notifierIds = @IPS_GetInstanceListByModuleID('{2512A0CA-5F11-40F0-9F3F-BD7AD1ACBB80}');
+                if ($devProbs > 0 && count($notifierIds) > 0 && function_exists('SNOT_GetProblems')) {
+                    $problemsJson = @SNOT_GetProblems($notifierIds[0]);
+                }
+                $problems     = is_string($problemsJson) ? json_decode($problemsJson, true) : [];
                     if (is_array($problems)) {
                         foreach ($problems as $p) {
                             $payload['deviceProblems'][] = [
@@ -189,9 +191,11 @@ class SecurityKachel extends IPSModuleStrict
                 }
 
                 // Aktive Alarme
-                if ($alarmCount > 0 && function_exists('SINV_GetActiveAlarms')) {
-                    $alarmsJson = @SINV_GetActiveAlarms($inventoryId);
-                    $alarms = is_string($alarmsJson) ? json_decode($alarmsJson, true) : [];
+                $notifierIds = @IPS_GetInstanceListByModuleID('{2512A0CA-5F11-40F0-9F3F-BD7AD1ACBB80}');
+                if ($alarmCount > 0 && count($notifierIds) > 0 && function_exists('SNOT_GetActiveAlarms')) {
+                    $alarmsJson = @SNOT_GetActiveAlarms($notifierIds[0]);
+                }
+                $alarms = is_string($alarmsJson) ? json_decode($alarmsJson, true) : [];
                     if (is_array($alarms)) {
                         foreach ($alarms as $a) {
                             $name = ($a['instanceName'] ?? '') . (($a['room'] ?? '') ? ' (' . $a['room'] . ')' : '');
