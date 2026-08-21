@@ -149,7 +149,7 @@ class SecurityKachel extends IPSModuleStrict
                     $payload['deviceProblems'][] = ['name' => 'System', 'health' => 'alarm', 'detail' => 'Modul-Fehler: SINV_GetByCategory fehlt'];
                 }
                 // Kontakte offen
-                if ($contactCount > 0) {
+                if ($contactCount > 0 && function_exists('SINV_GetByCategory')) {
                     $contactJson = @SINV_GetByCategory($inventoryId, 'contact');
                     $contacts    = is_string($contactJson) ? json_decode($contactJson, true) : [];
                     if (is_array($contacts)) {
@@ -225,7 +225,7 @@ class SecurityKachel extends IPSModuleStrict
                     }
 
                 // Wenn wir Alarme haben, prüfen wir auch Bewegungsmelder, da diese bei Abwesenheit Alarme auslösen!
-                if ($alarmCount > 0 && ($payload['presenceMode'] ?? 0) > 0) {
+                if ($alarmCount > 0 && ($payload['presenceMode'] ?? 0) > 0 && function_exists('SINV_GetByCategory')) {
                     $motionJson = @SINV_GetByCategory($inventoryId, 'motion');
                     $motions    = is_string($motionJson) ? json_decode($motionJson, true) : [];
                     if (is_array($motions)) {
@@ -305,7 +305,7 @@ class SecurityKachel extends IPSModuleStrict
 
         if ($Ident === 'TurnOffAllLights') {
             $invId = (int)$this->ReadPropertyInteger('RegistryID');
-            if ($invId > 0 && @IPS_InstanceExists($invId)) {
+            if ($invId > 0 && @IPS_InstanceExists($invId) && function_exists('SINV_GetByCategory')) {
                 $types = ['actor:switch', 'actor:dimmer', 'actor:color'];
                 foreach ($types as $t) {
                     $devices = json_decode(@SINV_GetByCategory($invId, $t), true) ?: [];
