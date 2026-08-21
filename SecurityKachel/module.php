@@ -154,7 +154,17 @@ class SecurityKachel extends IPSModuleStrict
                             if (!$varID || !@IPS_VariableExists($varID)) continue;
                             $val         = GetValue($varID);
                             $normalState = $c['normalState'] ?? null;
-                            $isOpen      = ($normalState !== null) ? ($val != $normalState) : (bool)$val;
+                            if (is_array($normalState) && isset($normalState['value'])) {
+                                $normalState = $normalState['value'];
+                            }
+                            
+                            // Check if boolean
+                            if (is_bool($val) && $normalState !== null) {
+                                $normalBool = filter_var($normalState, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                                if ($normalBool !== null) $normalState = $normalBool;
+                            }
+                            
+                            $isOpen = ($normalState !== null) ? ($val != $normalState) : (bool)$val;
                             if ($isOpen) {
                                 $name = ($c['instanceName'] ?? '') . ($c['room'] ? ' (' . $c['room'] . ')' : '');
                                 $payload['openWindows'][] = trim($name);
